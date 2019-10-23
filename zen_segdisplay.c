@@ -63,58 +63,35 @@ static void assert_zenSegDigitValue_OK (int value)
 //*****************************************************
 _Bool zenSegDisplayInit()
 {
+	struct stat statbuff;
 	FILE *GPIOFile;
-	FILE *pipe;
-	int exitCode;
 
 	//----------------------------------------------------------------
-	// Configure P9_17 and P9_18 pins as I2C using "config-pin" program
+	// Export GPIO_44 and GPIO_61
 	//----------------------------------------------------------------
-		// Configure P9_17 as I2C
-	pipe = popen("config-pin P9_17 i2c", "r");
-	exitCode = WEXITSTATUS(pclose(pipe));
-	if (exitCode != 0) {
-		printf("Program failed: %d\n", exitCode);
-	}
-
-		// Configure P9_18 as I2C
-	pipe = popen("config-pin P9_18 i2c", "r");
-	exitCode = WEXITSTATUS(pclose(pipe));
-	if (exitCode != 0) {
-		printf("Program failed: %d\n", exitCode);
-	}
-
+	if (stat("/sys/class/gpio/gpio44", &statbuff) != 0)
+		system("echo 44 | sudo tee /sys/class/gpio/export");
+	if (stat("/sys/class/gpio/gpio61", &statbuff) != 0)
+		system("echo 61 | sudo tee /sys/class/gpio/export");
 
 	//----------------------------------------------------------------
 	// Configure P8_26 (GPIO_61) and P8_12 (GPIO_44) pins as outputs
 	// to turn on/off each 15-segment digit.  Initialize as "off" (0).
 	//----------------------------------------------------------------
-		// Configure GPIO_61 and GPIO_44 as GPIO pins
-	GPIOFile = fopen("/sys/class/gpio/export", "w");
-	if (GPIOFile == NULL) {
-		printf("ERROR OPENING /sys/class/gpio/export.\n");
-		return false;
+		// Configure GPIO_44 as output (enable for right digit)
+	GPIOFile = fopen("/sys/class/gpio/gpio44/direction", "w");
+	while (GPIOFile == NULL) {
+		GPIOFile = fopen("/sys/class/gpio/gpio44/direction", "w");
 	}
-	fprintf(GPIOFile, "61");  // Export/enable GPIO_61 as GPIO
-	fprintf(GPIOFile, "44");  // Export/enable GPIO_44 as GPIO
+	fprintf(GPIOFile, "out");  // Configure GPIO_44 as output
 	fclose(GPIOFile);
 
 		// Configure GPIO_61 as output (enable for left digit)
 	GPIOFile = fopen("/sys/class/gpio/gpio61/direction", "w");
-	if (GPIOFile == NULL) {
-		printf("ERROR OPENING /sys/class/gpio/gpio61/direction.\n");
-		return false;
+	while (GPIOFile == NULL) {
+		GPIOFile = fopen("/sys/class/gpio/gpio61/direction", "w");
 	}
 	fprintf(GPIOFile, "out");  // Configure GPIO_61 as output
-	fclose(GPIOFile);
-
-		// Configure GPIO_44 as output (enable for right digit)
-	GPIOFile = fopen("/sys/class/gpio/gpio44/direction", "w");
-	if (GPIOFile == NULL) {
-		printf("ERROR OPENING /sys/class/gpio/gpio44/direction.\n");
-		return false;
-	}
-	fprintf(GPIOFile, "out");  // Configure GPIO_44 as output
 	fclose(GPIOFile);
 
 		// Set GPIO_61 output to 0 (turn off left digit)

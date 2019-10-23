@@ -18,6 +18,7 @@ static const struct JoystickButtonInfo joybuttons[] =
     {"ENTER",  27}
 };
 
+static _Bool previous_state[JOYSTICK_MAXBUTTONS];
 
 //------------ functions ---------------------------------------
 //***** static functions ******************************
@@ -30,19 +31,41 @@ static void assert_zenJoystickButton_OK (enum zenJoystickButton button)
 
 //***** public functions ******************************
 
+// Initialize Zen joystick buttons.
+void zenJoystickInit ()
+{
+	struct stat statbuff;
+	char buffstr[128];
+	FILE *GPIOFile;
+
+	// Export GPIO pins
+	for (int k = 0; k < JOYSTICK_MAXBUTTONS; k++) {
+			// Check if GPIO already exists.  If not exist, export it.
+		sprintf(buffstr, "/sys/class/gpio/gpio%d", joybuttons[k].portnum);
+		if (stat(buffstr, &statbuff) != 0) {
+			sprintf(buffstr, "echo %d | sudo tee /sys/class/gpio/export", joybuttons[k].portnum);
+			system(buffstr);
+		}
+	}
+
+		// Configure GPIO pins as inputs
+	for (int k = 0; k < JOYSTICK_MAXBUTTONS; k++) {
+		sprintf(buffstr, "/sys/class/gpio/gpio%d/direction", joybuttons[k].portnum);
+		GPIOFile = fopen(buffstr, "w");
+		while (GPIOFile == NULL) {
+			GPIOFile = fopen(buffstr, "w");
+		}
+		fprintf(GPIOFile, "in");
+		fclose(GPIOFile);
+	}
+
+}
+
+
 // Check if a button is pressed.
 // Return value:  true = pressed, false = not pressed, or unsuccessful file I/O.
 //
-// This function assumes that the GPIO pins have been
-// programmed such that 0 = pressed, 1 = not pressed.
-//
-// NOTE:
-// Somehow, opening a FILE * array in an "init" routine and
-// then using a FILE * from the array to read a GPIO file does not work
-// (fgets() returns NULL).
-// Therefore, file is explicitly opened and closed in this routine.
-//
-_Bool zenJoystickButtonPressed (enum zenJoystickButton button)
+_Bool zenJoystickButtonPushed (enum zenJoystickButton button)
 {
     char filepath[128];
 
@@ -71,7 +94,45 @@ _Bool zenJoystickButtonPressed (enum zenJoystickButton button)
 }
 
 
-// Name of button
+// Check if a button is pressed.
+// Return value:  true = pressed, false = not pressed
+//
+_Bool zenJoystickButtonPressed (enum zenJoystickButton button)
+{
+	_Bool retval, currval;
+
+	currval = zenJoystickButtonPushed(button);
+	if (!previous_state[button] && currval) {  // button pressed
+		retval = true;
+	}
+	else
+		retval = false;
+
+	previous_state[button] = currval;
+	return retval;
+}
+
+
+// Check if a button is released.
+// Return value:  true = released, false = not released
+//
+_Bool zenJoystickButtonReleased (enum zenJoystickButton button)
+{
+	_Bool retval, currval;
+
+	currval = zenJoystickButtonPushed(button);
+	if (previous_state[button] && !currval) {  // button released
+		retval = true;
+	}
+	else
+		retval = false;
+
+	previous_state[button] = currval;
+	return retval;
+}
+
+
+// Get name string of button
 const char *zenJoystickButtonName (enum zenJoystickButton button)
 {
     return(joybuttons[button].namestr);

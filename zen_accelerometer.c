@@ -16,25 +16,6 @@ static int i2cFileDesc;
 //*****************************************************
 _Bool zenAccelerometerInit()
 {
-	FILE *pipe;
-	int exitCode;
-
-	//----------------------------------------------------------------
-	// Configure P9_17 and P9_18 pins as I2C using "config-pin" program
-	//----------------------------------------------------------------
-		// Configure P9_17 as I2C
-	pipe = popen("config-pin P9_17 i2c", "r");
-	exitCode = WEXITSTATUS(pclose(pipe));
-	if (exitCode != 0) {
-		printf("Program failed: %d\n", exitCode);
-	}
-
-		// Configure P9_18 as I2C
-	pipe = popen("config-pin P9_18 i2c", "r");
-	exitCode = WEXITSTATUS(pclose(pipe));
-	if (exitCode != 0) {
-		printf("Program failed: %d\n", exitCode);
-	}
 
 	//----------------------------------------------------------------
 	// Initialize I2C interface and enable accelerometer.
@@ -111,7 +92,7 @@ _Bool zenAccelerometerRead(int *xval, int *yval, int *zval)
 		return false;
 	}
 
-	// Form X, Y, Z values
+	// Form X, Y, Z 12-bit signed values
 	*xval = (((int) buff[1]) << 8) + buff[2];
 	*xval >>= 4;
 	if (*xval > 2047)

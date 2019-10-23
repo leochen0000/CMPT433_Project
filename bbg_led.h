@@ -4,7 +4,6 @@
 #ifndef BBG_LED_H
 #define BBG_LED_H
 
-//  Routines/definitions for BeagleBone Green's LEDs
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -36,8 +35,16 @@ enum bbgLEDOffOn
 
 
 //------- function prototypes ----------------------
+// Initialize an LED trigger mode.
+// Return value:  true=successful, false=not successful
 _Bool bbgLED_trigmode(enum bbgLED led, enum bbgLEDTrigMode trigmode);
+
+// LED on/off
+// Return value:  true=successful, false=not successful
 _Bool bbgLED_set(enum bbgLED led, enum bbgLEDOffOn ledoffon);
+
+// All LEDs on/off
+// Return value:  true=successful, false=not successful
 _Bool bbgLED_setall(enum bbgLEDOffOn ledoffon);
 
 #endif

@@ -27,6 +27,38 @@ static void assert_extPushButton_OK (enum extPushButton button)
 }
 
 //***** public functions ******************************
+
+// Initialize external push-buttons.
+void extPushButtonInit ()
+{
+	struct stat statbuff;
+	char buffstr[128];
+	FILE *GPIOFile;
+
+	// Export GPIO pins
+	for (int k = 0; k < PUSH_MAXBUTTONS; k++) {
+			// Check if GPIO already exists.  If not exist, export it.
+		sprintf(buffstr, "/sys/class/gpio/gpio%d", pushbuttons[k].portnum);
+		if (stat(buffstr, &statbuff) != 0) {
+			sprintf(buffstr, "echo %d | sudo tee /sys/class/gpio/export", pushbuttons[k].portnum);
+			system(buffstr);
+		}
+	}
+
+		// Configure GPIO pins as inputs
+	for (int k = 0; k < PUSH_MAXBUTTONS; k++) {
+		sprintf(buffstr, "/sys/class/gpio/gpio%d/direction", pushbuttons[k].portnum);
+		GPIOFile = fopen(buffstr, "w");
+		while (GPIOFile == NULL) {
+			GPIOFile = fopen(buffstr, "w");
+		}
+		fprintf(GPIOFile, "in");
+		fclose(GPIOFile);
+	}
+
+}
+
+
 // Check if a button is pushed.
 // Return value:  true = pressed, false = not pressed, or unsuccessful file I/O.
 //
@@ -101,7 +133,7 @@ _Bool extPushButtonReleased (enum extPushButton button)
 }
 
 
-// Name of button
+// Get name string of button
 const char *extPushButtonName (enum extPushButton button)
 {
     return(pushbuttons[button].namestr);

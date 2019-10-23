@@ -13,6 +13,9 @@
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
 
 
 //------- Enums and definitions --------------------

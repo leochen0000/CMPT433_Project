@@ -22,26 +22,6 @@ static void assert_blinktype_OK (enum ht16k33_blink blinktype)
 //*****************************************************
 _Bool extLED8x8Init()
 {
-	FILE *pipe;
-	int exitCode;
-
-	//----------------------------------------------------------------
-	// Configure P9_17 and P9_18 pins as I2C using "config-pin" program
-	//----------------------------------------------------------------
-		// Configure P9_17 as I2C
-	pipe = popen("config-pin P9_17 i2c", "r");
-	exitCode = WEXITSTATUS(pclose(pipe));
-	if (exitCode != 0) {
-		printf("Program failed: %d\n", exitCode);
-	}
-
-		// Configure P9_18 as I2C
-	pipe = popen("config-pin P9_18 i2c", "r");
-	exitCode = WEXITSTATUS(pclose(pipe));
-	if (exitCode != 0) {
-		printf("Program failed: %d\n", exitCode);
-	}
-
 	//----------------------------------------------------------------
 	// Initialize display buffer
 	//----------------------------------------------------------------
