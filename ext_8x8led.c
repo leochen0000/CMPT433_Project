@@ -1,8 +1,10 @@
 #include "ext_8x8led.h"
 
 //------------ variables and definitions -----------------------
+static unsigned char localbuffer[8];
 static unsigned char displaybuffer[17];  // 1 command byte + 16 bytes (rows), 8 bits (columns) per byte
 static int i2cFileDesc;
+static enum display_rotation disprotation = DISPLAY_ROTATE0;
 
 
 //------------ functions ---------------------------------------
@@ -12,6 +14,101 @@ static void assert_blinktype_OK (enum ht16k33_blink blinktype)
     assert((blinktype >= HT16K33_BLINK_OFF) && (blinktype <= HT16K33_BLINK_0_5HZ));
 }
 
+
+//*****************************************************
+// Remap an 8x8 icon so that it displays correctly on 8x8 LED with rotation.
+// "rot" parameter specifies the rotation (0, 90, 180, 270 degrees).
+//*****************************************************
+static void extLED8x8RemapIcon(unsigned char *img, unsigned char *outimg)
+{
+	unsigned char tmpbyte;
+	unsigned char tmpin;
+	int k;
+	int j;
+
+	// 270 degrees rotation
+	if (disprotation == DISPLAY_ROTATE270) {
+		for (k = 0; k < 8; k++) {
+			tmpin = img[k];
+			if (tmpin & 0x80)
+				tmpin = 0x01 | (tmpin << 1);
+			else
+				tmpin = (tmpin << 1);
+
+			for (j = 0; j < 8; j++) {
+				tmpbyte <<= 1;
+				if (tmpin & 1)
+					tmpbyte |= 0x01;
+				tmpin >>= 1;
+			}
+			outimg[k] = tmpbyte;
+		}
+	}
+
+	// 0 degrees rotation
+	else if (disprotation == DISPLAY_ROTATE0) {
+		unsigned char tmpbuff[8];
+
+		for (k = 0; k < 8; k++) {
+			for (j = 0; j < 8; j++) {
+				tmpbyte <<= 1;
+				if (img[j] & (1<<k))
+					tmpbyte |= 0x01;
+			}
+			if (tmpbyte & 0x01)
+				tmpbyte = 0x80 | (tmpbyte >> 1);
+			else
+				tmpbyte = (tmpbyte >> 1);
+			tmpbuff[k] = tmpbyte;
+		}
+
+		for (k = 0; k < 8; k++) {
+			outimg[k] = tmpbuff[7-k];
+		}
+	}
+
+	// 90 degrees rotation
+	else if (disprotation == DISPLAY_ROTATE90) {
+		for (k = 0; k < 8; k++) {
+			tmpin = img[k];
+			if (tmpin & 0x01)
+				tmpin = 0x80 | (tmpin >> 1);
+			else
+				tmpin = (tmpin >> 1);
+
+			outimg[k] = tmpin;
+		}
+
+		for (k = 0; k < 4; k++) {
+			tmpbyte = outimg[k];
+			outimg[k] = outimg[7-k];
+			outimg[7-k] = tmpbyte;
+		}
+	}
+
+	// 180 degrees rotation
+	else {
+		unsigned char tmpbuff[8];
+
+		for (k = 0; k < 8; k++) {
+			for (j = 0; j < 8; j++) {
+				tmpbyte >>= 1;
+				if (img[j] & (1<<k))
+					tmpbyte |= 0x80;
+			}
+			if (tmpbyte & 0x01)
+				tmpbyte = 0x80 | (tmpbyte >> 1);
+			else
+				tmpbyte = (tmpbyte >> 1);
+			tmpbuff[k] = tmpbyte;
+		}
+
+		for (k = 0; k < 8; k++) {
+			outimg[k] = tmpbuff[7-k];
+		}
+	}
+
+}
 
 
 //***** public functions ******************************
@@ -26,6 +123,8 @@ _Bool extLED8x8Init()
 	// Initialize display buffer
 	//----------------------------------------------------------------
 	displaybuffer[0] = HT16K33_CMD_DISPRAM;
+	for (int k = 0; k < 8; k++)
+		localbuffer[k] = 0;
 	for (int k = 1; k < 17; k++)
 		displaybuffer[k] = 0;
 
@@ -98,6 +197,15 @@ _Bool extLED8x8Init()
 //*****************************************************
 _Bool extLED8x8DisplayUpdate()
 {
+	//----------------------------------------------------------------
+	// Remap local buffer to display buffer for sending
+	//----------------------------------------------------------------
+	unsigned char tmpbuff[8];
+	extLED8x8RemapIcon(localbuffer, tmpbuff);
+	for (int k = 0; k < 8; k++) {
+		displaybuffer[1+k*2] = tmpbuff[k];
+	}
+
 	//----------------------------------------------------------------
 	// Open I2C interface
 	//----------------------------------------------------------------
@@ -258,24 +366,32 @@ _Bool extLED8x8DisplayBrightness(unsigned char brightness)
 
 
 //============== Drawing routines ========================================
+
 //*****************************************************
-// Fill display buffer with pixel value.
+// Set rotation of 8x8 display.  0, 90, 180, or 270 clockwise.
+//*****************************************************
+void extLED8x8SetDisplayRotation(enum display_rotation rotval)
+{
+	disprotation = rotval;
+}
+
+
+//*****************************************************
+// Fill local buffer with pixel value.
 //*****************************************************
 void extLED8x8FillPixel(unsigned char pixelval)
 {
-	for (int k = 1; k < 17; k++) {
+	for (int k = 0; k < 8; k++) {
 		if (pixelval)
-			displaybuffer[k] = 0xFF;
+			localbuffer[k] = 0xFF;
 		else
-			displaybuffer[k] = 0x00;
+			localbuffer[k] = 0x00;
 	}
 }
 
 
 //*****************************************************
-// Draw a pixel into the display buffer.
-// HT16K33 controller memory is 16x8, but only 8x8 is used.
-// Odd bytes of display buffer (rows 9 to 16) are unused.
+// Draw a pixel into the local buffer.
 // Top, left corner pixel coordinate is (0,0).
 // Bottom, right corner pixel coordinate is (7,7).
 //*****************************************************
@@ -284,10 +400,10 @@ void extLED8x8DrawPixel(unsigned int x, unsigned int y, unsigned char pixelval)
 	// Only draw pixel if it is inbounds (x=0 to 7, y=0 to 7)
 	if ((x < 8) && (y < 8)) {
 		if (pixelval) {
-			displaybuffer[y*2] |= (0x80 >> x);
+			localbuffer[y] |= (0x80 >> x);
 		}
 		else {
-			displaybuffer[y*2] &= ~(0x80 >> x);
+			localbuffer[y] &= ~(0x80 >> x);
 		}
 	}
 
@@ -295,16 +411,12 @@ void extLED8x8DrawPixel(unsigned int x, unsigned int y, unsigned char pixelval)
 
 
 //*****************************************************
-// Load an 8x8 image into display buffer.
-// Parameter "img" is a pointer to an 8-byte unsigned char array.
-// HT16K33 controller memory is 16x8, but only 8x8 is used.
-// Odd bytes of display buffer (rows 9 to 16) are unused.
+// Load an 8x8 image into local buffer.
 //*****************************************************
 void extLED8x8LoadImage(unsigned char *img)
 {
 	for (int k = 0; k < 8; k++) {
-		displaybuffer[k*2] = *img;
-		img++;
+		localbuffer[k] = img[k];
 	}
 }
 
