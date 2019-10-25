@@ -1,5 +1,6 @@
 // ext_8x8led.h
 // Routines/definitions for external 8x8 LED display
+// by Dane Lim
 
 #ifndef EXT_8X8LED_H
 #define EXT_8X8LED_H
@@ -8,6 +9,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -35,6 +37,14 @@ enum display_rotation
 	DISPLAY_ROTATE90,
 	DISPLAY_ROTATE180,
 	DISPLAY_ROTATE270
+};
+
+enum scroll_direction
+{
+	SCROLL_UP = 0,
+	SCROLL_DOWN,
+	SCROLL_LEFT,
+	SCROLL_RIGHT
 };
 
 
@@ -95,6 +105,15 @@ void extLED8x8DrawPixel(unsigned int x, unsigned int y, unsigned char pixelval);
 // Load an 8x8 image into local buffer.
 //*****************************************************
 void extLED8x8LoadImage(unsigned char *img);  // img is pointer to 8-byte unsigned char array
+
+//*****************************************************
+// Scroll 7-bit ASCII text one character at a time through the 8x8 matrix
+// txtstr:  text string to display
+// fontset:  128-character 8x8 font set
+// scrollmsdelay:  pixel shift delay in milliseconds
+// scrolldir:  scroll direction
+//*****************************************************
+void extLED8x8ScrollText(char *txtstr, unsigned char *fontset, int scrollmsdelay, enum scroll_direction scrolldir);
 
 #endif
 

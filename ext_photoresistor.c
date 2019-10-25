@@ -1,3 +1,4 @@
+// By Dane Lim
 #include "ext_photoresistor.h"
 
 //------------ variables and definitions -----------------------

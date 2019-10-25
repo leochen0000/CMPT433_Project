@@ -1,5 +1,6 @@
 // ext_photoresistor.h
 // Routines/definitions for a photoresistor
+// By Dane Lim
 
 #ifndef EXT_PHOTORESISTOR_H
 #define EXT_PHOTORESISTOR_H

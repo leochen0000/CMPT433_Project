@@ -1,3 +1,4 @@
+// By Dane Lim
 #include "ext_8x8led.h"
 
 //------------ variables and definitions -----------------------
@@ -418,6 +419,84 @@ void extLED8x8LoadImage(unsigned char *img)
 	for (int k = 0; k < 8; k++) {
 		localbuffer[k] = img[k];
 	}
+}
+
+
+//*****************************************************
+// Scroll 7-bit ASCII text one character at a time through the 8x8 matrix
+// txtstr:  text string to display
+// fontset:  128-character 8x8 font set
+// scrollmsdelay:  pixel shift delay in milliseconds
+// scrolldir:  scroll direction
+//*****************************************************
+void extLED8x8ScrollText(char *txtstr, unsigned char *fontset, int scrollmsdelay, enum scroll_direction scrolldir)
+{
+    struct timespec reqDelay;
+    reqDelay.tv_sec = 0;
+    reqDelay.tv_nsec = scrollmsdelay*1000000;
+
+	// Go through each character
+	while (*txtstr != 0) {
+		unsigned char fontchar1[8];
+		unsigned char fontchar2[8];
+
+		// Copy current and next font character
+		for (int k = 0; k < 8; k++) {
+			fontchar1[k] = fontset[(txtstr[0] * 8) + k];
+			if (txtstr[1] != 0)
+				fontchar2[k] = fontset[(txtstr[1] * 8) + k];
+			else
+				fontchar2[k] = 0;
+		}
+
+		// Scroll through 8 pixels of font character
+		for (int pixoffset = 0; pixoffset < 8; pixoffset++) {
+
+			// Compose local buffer according scroll direction
+			if (scrolldir == SCROLL_LEFT) {
+				for (int line = 0; line < 8; line++) {
+					unsigned char tmpbyte;
+					tmpbyte = fontchar1[line] << pixoffset;
+					tmpbyte = tmpbyte | (fontchar2[line] >> (8 - pixoffset));
+					localbuffer[line] = tmpbyte;
+				}
+			}
+			else if (scrolldir == SCROLL_RIGHT) {
+				for (int line = 0; line < 8; line++) {
+					unsigned char tmpbyte;
+					tmpbyte = fontchar1[line] >> pixoffset;
+					tmpbyte = tmpbyte | (fontchar2[line] << (8 - pixoffset));
+					localbuffer[line] = tmpbyte;
+				}
+			}
+			else if (scrolldir == SCROLL_UP) {
+				for (int line = 0; line < 8; line++) {
+					if (line < (8 - pixoffset))
+						localbuffer[line] = fontchar1[line+pixoffset];
+					else
+						localbuffer[line] = fontchar2[line-(8-pixoffset)];
+				}
+			}
+			else {  // SCROLL_DOWN
+				for (int line = 0; line < 8; line++) {
+					if (line < pixoffset)
+						localbuffer[line] = fontchar2[line+(8-pixoffset)];
+					else
+						localbuffer[line] = fontchar1[line-pixoffset];
+				}
+			}
+
+			// Update display
+			extLED8x8DisplayUpdate();
+			nanosleep(&reqDelay, (struct timespec *) NULL);
+		}
+
+		txtstr++;
+	}
+
+	extLED8x8FillPixel(0);
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
 }
 
 

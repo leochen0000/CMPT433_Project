@@ -7,12 +7,12 @@
 #include "ext_buttons.h"
 #include "ext_photoresistor.h"
 #include "ext_8x8led.h"
-#include "icons8x8.h"
+#include "font8x8.h"
 
 int main(int argc, char **argv)
 {
     struct timespec reqDelay;
-    reqDelay.tv_sec = 0;
+    reqDelay.tv_sec = 1;
     reqDelay.tv_nsec = 250000000;  // 100ms = 100,000us = 100,000,000ns
 
 	// Initialize 8x8 LED display
@@ -40,10 +40,9 @@ int main(int argc, char **argv)
 
 	// Cycle thru displaying icons
     while (1) {
-		extLED8x8LoadImage(&(icons8x8[k*8]));
-		extLED8x8DisplayUpdate();
+		extLED8x8ScrollText("HELLO WORLD 1234567890", font8x8, 50, k);
 		nanosleep(&reqDelay, (struct timespec *) NULL);
-		if (++k == (sizeof(icons8x8)>>3))
+		if (++k == 4)
 			k = 0;
     }
 

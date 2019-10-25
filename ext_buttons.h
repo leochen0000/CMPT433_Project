@@ -1,5 +1,6 @@
 // ext_buttons.h
 // Routines/definitions for 3 external push buttons
+// by Dane Lim
 
 #ifndef EXT_BUTTONS_H
 #define EXT_BUTTONS_H
