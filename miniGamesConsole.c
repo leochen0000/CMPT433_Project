@@ -6,13 +6,13 @@
 #include "zen_buzzer.h"
 #include "zen_accelerometer.h"
 #include "ext_8x8led.h"
-#include "font8x8.h"
+//#include "font8x8.h"
+#include "catchGame.h"
 
 int main(int argc, char **argv)
 {
 	zenJoystickInit();
 	zenBuzzerInit();
-	zenBuzzerBeep(110, 250);
 
     struct timespec reqDelay;
     reqDelay.tv_sec = 1;
@@ -39,11 +39,12 @@ int main(int argc, char **argv)
 	// Set the rotation of the 8x8 LED display
 	extLED8x8SetDisplayRotation(DISPLAY_ROTATE0);
 
-	int k = 0;
+	catchGame_start();
 
 	// Cycle thru displaying icons
+	int k = 0;
     while (1) {
-		extLED8x8ScrollText("HELLO WORLD 1234567890", font8x8, 50, k);
+//		extLED8x8ScrollText("HELLO WORLD 1234567890", font8x8, 50, k);
 		nanosleep(&reqDelay, (struct timespec *) NULL);
 		if (++k == 4)
 			k = 0;
