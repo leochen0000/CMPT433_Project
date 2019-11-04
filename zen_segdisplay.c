@@ -63,16 +63,30 @@ static void assert_zenSegDigitValue_OK (int value)
 //*****************************************************
 _Bool zenSegDisplayInit()
 {
-	struct stat statbuff;
 	FILE *GPIOFile;
+    struct timespec reqDelay;
+    reqDelay.tv_sec = 0;
+    reqDelay.tv_nsec = 300000000;  // 300ms
 
 	//----------------------------------------------------------------
 	// Export GPIO_44 and GPIO_61
 	//----------------------------------------------------------------
-	if (stat("/sys/class/gpio/gpio44", &statbuff) != 0)
-		system("echo 44 | sudo tee /sys/class/gpio/export");
-	if (stat("/sys/class/gpio/gpio61", &statbuff) != 0)
-		system("echo 61 | sudo tee /sys/class/gpio/export");
+	GPIOFile = fopen("/sys/class/gpio/export", "w");
+	if (GPIOFile == NULL) {
+		printf("ERROR!  Cannot open /sys/class/gpio/export for writing!\n");
+		exit(1);
+	}
+	fprintf(GPIOFile, "44");
+	fclose(GPIOFile);
+
+	GPIOFile = fopen("/sys/class/gpio/export", "w");
+	if (GPIOFile == NULL) {
+		printf("ERROR!  Cannot open /sys/class/gpio/export for writing!\n");
+		exit(1);
+	}
+	fprintf(GPIOFile, "61");
+	fclose(GPIOFile);
+	nanosleep(&reqDelay, (struct timespec *) NULL);
 
 	//----------------------------------------------------------------
 	// Configure P8_26 (GPIO_61) and P8_12 (GPIO_44) pins as outputs
@@ -80,16 +94,18 @@ _Bool zenSegDisplayInit()
 	//----------------------------------------------------------------
 		// Configure GPIO_44 as output (enable for right digit)
 	GPIOFile = fopen("/sys/class/gpio/gpio44/direction", "w");
-	while (GPIOFile == NULL) {
-		GPIOFile = fopen("/sys/class/gpio/gpio44/direction", "w");
+	if (GPIOFile == NULL) {
+		printf("ERROR!  Cannot open /sys/class/gpio/gpio44/direction for writing!\n");
+		exit(1);
 	}
 	fprintf(GPIOFile, "out");  // Configure GPIO_44 as output
 	fclose(GPIOFile);
 
 		// Configure GPIO_61 as output (enable for left digit)
 	GPIOFile = fopen("/sys/class/gpio/gpio61/direction", "w");
-	while (GPIOFile == NULL) {
-		GPIOFile = fopen("/sys/class/gpio/gpio61/direction", "w");
+	if (GPIOFile == NULL) {
+		printf("ERROR!  Cannot open /sys/class/gpio/gpio64/direction for writing!\n");
+		exit(1);
 	}
 	fprintf(GPIOFile, "out");  // Configure GPIO_61 as output
 	fclose(GPIOFile);

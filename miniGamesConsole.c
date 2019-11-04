@@ -3,14 +3,17 @@
 #include <time.h>
 #include "bbg_led.h"
 #include "zen_joystick.h"
+#include "zen_buzzer.h"
 #include "zen_accelerometer.h"
-#include "ext_buttons.h"
-#include "ext_photoresistor.h"
 #include "ext_8x8led.h"
 #include "font8x8.h"
 
 int main(int argc, char **argv)
 {
+	zenJoystickInit();
+	zenBuzzerInit();
+	zenBuzzerBeep(110, 250);
+
     struct timespec reqDelay;
     reqDelay.tv_sec = 1;
     reqDelay.tv_nsec = 250000000;  // 100ms = 100,000us = 100,000,000ns

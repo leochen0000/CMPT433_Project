@@ -12,9 +12,9 @@ struct PushButtonInfo
 
 static const struct PushButtonInfo pushbuttons[] =
 {
-    {"LEFT",     31},
-    {"MIDDLE",   50},
-    {"RIGHT",   48}
+    {"LEFT",     34},
+    {"MIDDLE",   38},
+    {"RIGHT",   39}
 };
 
 static _Bool previous_state[PUSH_MAXBUTTONS];
@@ -32,26 +32,32 @@ static void assert_extPushButton_OK (enum extPushButton button)
 // Initialize external push-buttons.
 void extPushButtonInit ()
 {
-	struct stat statbuff;
 	char buffstr[128];
 	FILE *GPIOFile;
+    struct timespec reqDelay;
+    reqDelay.tv_sec = 0;
+    reqDelay.tv_nsec = 300000000;  // 300ms
 
 	// Export GPIO pins
 	for (int k = 0; k < PUSH_MAXBUTTONS; k++) {
-			// Check if GPIO already exists.  If not exist, export it.
-		sprintf(buffstr, "/sys/class/gpio/gpio%d", pushbuttons[k].portnum);
-		if (stat(buffstr, &statbuff) != 0) {
-			sprintf(buffstr, "echo %d | sudo tee /sys/class/gpio/export", pushbuttons[k].portnum);
-			system(buffstr);
+		GPIOFile = fopen("/sys/class/gpio/export", "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR!  Cannot open /sys/class/gpio/export for writing!\n");
+			exit(1);
 		}
+
+		fprintf(GPIOFile, "%d", pushbuttons[k].portnum);
+		fclose(GPIOFile);
 	}
+	nanosleep(&reqDelay, (struct timespec *) NULL);
 
 		// Configure GPIO pins as inputs
 	for (int k = 0; k < PUSH_MAXBUTTONS; k++) {
 		sprintf(buffstr, "/sys/class/gpio/gpio%d/direction", pushbuttons[k].portnum);
 		GPIOFile = fopen(buffstr, "w");
-		while (GPIOFile == NULL) {
-			GPIOFile = fopen(buffstr, "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR!  Cannot open %s for writing!\n", buffstr);
+			exit(1);
 		}
 		fprintf(GPIOFile, "in");
 		fclose(GPIOFile);

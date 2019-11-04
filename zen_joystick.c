@@ -34,26 +34,32 @@ static void assert_zenJoystickButton_OK (enum zenJoystickButton button)
 // Initialize Zen joystick buttons.
 void zenJoystickInit ()
 {
-	struct stat statbuff;
 	char buffstr[128];
 	FILE *GPIOFile;
+    struct timespec reqDelay;
+    reqDelay.tv_sec = 0;
+    reqDelay.tv_nsec = 300000000;  // 300ms
 
 	// Export GPIO pins
 	for (int k = 0; k < JOYSTICK_MAXBUTTONS; k++) {
-			// Check if GPIO already exists.  If not exist, export it.
-		sprintf(buffstr, "/sys/class/gpio/gpio%d", joybuttons[k].portnum);
-		if (stat(buffstr, &statbuff) != 0) {
-			sprintf(buffstr, "echo %d | sudo tee /sys/class/gpio/export", joybuttons[k].portnum);
-			system(buffstr);
+		GPIOFile = fopen("/sys/class/gpio/export", "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR!  Cannot open /sys/class/gpio/export for writing!\n");
+			exit(1);
 		}
+
+		fprintf(GPIOFile, "%d", joybuttons[k].portnum);
+		fclose(GPIOFile);
 	}
+	nanosleep(&reqDelay, (struct timespec *) NULL);
 
 		// Configure GPIO pins as inputs
 	for (int k = 0; k < JOYSTICK_MAXBUTTONS; k++) {
 		sprintf(buffstr, "/sys/class/gpio/gpio%d/direction", joybuttons[k].portnum);
 		GPIOFile = fopen(buffstr, "w");
-		while (GPIOFile == NULL) {
-			GPIOFile = fopen(buffstr, "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR!  Cannot open %s for writing!\n", buffstr);
+			exit(1);
 		}
 		fprintf(GPIOFile, "in");
 		fclose(GPIOFile);
