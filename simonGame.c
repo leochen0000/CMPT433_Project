@@ -121,6 +121,8 @@ static void *simonGameThread()
 
 void simonGame_start(void)
 {
+	pthread_mutex_init(&simonGameStat, NULL);
+
 	// Lock mutex used by thread to check for request to end the thread
 	pthread_mutex_lock(&simonGameStat);
 

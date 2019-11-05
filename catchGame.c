@@ -3,7 +3,8 @@
 //------------ variables and definitions -----------------------
 static pthread_t catchGame_id;
 static pthread_mutex_t catchGameStat = PTHREAD_MUTEX_INITIALIZER;
-
+static int catches = 0;
+static int attempts = 0;
 
 //------------ functions ---------------------------------------
 //***** static functions ******************************
@@ -34,6 +35,9 @@ static void *catchGameThread()
 	unsigned int ballslowness = 6;
 	unsigned int dropcount = 0;
 
+	catches = 0;
+	attempts = 0;
+
 	extLED8x8FillPixel(0);
 	drawCatcher(currpos, 1);
 	extLED8x8DisplayUpdate();
@@ -61,10 +65,16 @@ static void *catchGameThread()
 				extLED8x8DrawPixel(ballposx, ballposy, 0);
 
 			if (ballposy == 6) {
-				if (ballposx == currpos)
+				if (ballposx == currpos) {
 					zenBuzzerBeep(440, 100);
-				else
+					catches++;
+				}
+				else {
 					zenBuzzerBeep(110, 300);
+				}
+				attempts++;
+				printf("Attempts=%d, Catches=%d\n", attempts, catches);
+
 				ballposx = (rand() % 6) + 1;
 				ballposy = 0;
 
@@ -129,6 +139,9 @@ static void *catchGameThread()
 
 void catchGame_start (void)
 {
+    printf("Starting game of 'Catch'\n");
+	pthread_mutex_init(&catchGameStat, NULL);
+
 	// Lock mutex used by thread to check for request to end the thread
 	pthread_mutex_lock(&catchGameStat);
 
@@ -142,7 +155,18 @@ void catchGame_stop (void)
 	// Unlock mutex to let sorting thread know about request to finish
 	pthread_mutex_unlock(&catchGameStat);
 
+    printf("Stopping game of 'Catch'\n");
+
 	// Wait for thread to finish
 	pthread_join(catchGame_id, NULL);
 }
+
+
+void catchGame_GetScore(int *attempt, int *catch)
+{
+	*attempt = attempts;
+	*catch = catches;
+}
+
+
 

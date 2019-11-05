@@ -12,9 +12,8 @@ struct PushButtonInfo
 
 static const struct PushButtonInfo pushbuttons[] =
 {
-    {"LEFT",     34},
-    {"MIDDLE",   38},
-    {"RIGHT",   39}
+    {"SELECT",       66},
+    {"ENTER_EXIT",   67}
 };
 
 static _Bool previous_state[PUSH_MAXBUTTONS];
@@ -24,7 +23,7 @@ static _Bool previous_state[PUSH_MAXBUTTONS];
 //***** static functions ******************************
 static void assert_extPushButton_OK (enum extPushButton button)
 {
-    assert((button >= PUSHBUTTON_LEFT) && (button < PUSH_MAXBUTTONS));
+    assert((button >= PUSHBUTTON_SELECT) && (button < PUSH_MAXBUTTONS));
 }
 
 //***** public functions ******************************

@@ -17,9 +17,8 @@
 // Push-buttons
 enum extPushButton
 {
-    PUSHBUTTON_LEFT = 0,
-    PUSHBUTTON_MIDDLE,
-    PUSHBUTTON_RIGHT,
+    PUSHBUTTON_SELECT = 0,
+    PUSHBUTTON_ENTER_EXIT,
     PUSH_MAXBUTTONS
 };
 

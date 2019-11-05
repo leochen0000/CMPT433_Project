@@ -16,7 +16,18 @@
 #include "zen_buzzer.h"
 #include "ext_8x8led.h"
 
+//------- function prototypes ----------------------
+
+// Start the game thread
+//
 void catchGame_start(void);
+
+// Stop the game thread
+//
 void catchGame_stop(void);
+
+// Get score
+//
+void catchGame_GetScore(int *attempts, int *catches);
 
 #endif
