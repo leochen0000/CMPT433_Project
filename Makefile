@@ -14,7 +14,7 @@ all: miniGamesConsole done
 miniGamesConsole:
 	@echo "Building miniGamesConsole"
 	@echo " "
-	$(CC_C) $(CFLAGS) miniGamesConsole.c catchGame.c bbg_led.c ext_8x8led.c ext_photoresistor.c ext_buttons.c zen_buzzer.c zen_joystick.c zen_accelerometer.c zen_segdisplay.c zen_potentiometer.c -pthread -o $(OUTDIR)/$(OUTFILE1)
+	$(CC_C) $(CFLAGS) miniGamesConsole.c catchGame.c simonGame.c bbg_led.c ext_8x8led.c ext_photoresistor.c ext_buttons.c zen_buzzer.c zen_joystick.c zen_accelerometer.c zen_segdisplay.c zen_potentiometer.c -pthread -o $(OUTDIR)/$(OUTFILE1)
 	@echo " "
 
 done: 
