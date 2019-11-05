@@ -8,6 +8,7 @@
 #include "ext_8x8led.h"
 //#include "font8x8.h"
 #include "catchGame.h"
+#include "simonGame.h"
 
 int main(int argc, char **argv)
 {
@@ -39,7 +40,8 @@ int main(int argc, char **argv)
 	// Set the rotation of the 8x8 LED display
 	extLED8x8SetDisplayRotation(DISPLAY_ROTATE0);
 
-	catchGame_start();
+	//catchGame_start();
+	simonGame_start();
 
 	// Cycle thru displaying icons
 	int k = 0;
