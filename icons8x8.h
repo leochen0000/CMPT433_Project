@@ -1,3 +1,15 @@
+#define SMILEY_ICON        0
+#define RIGHT_ARROW_ICON   8
+#define LEFT_ARROW_ICON   16
+#define UP_ARROW_ICON     24
+#define DOWN_ARROW_ICON   32
+#define X_SYMBOL_ICON     40
+#define CROSS_SYMBOL_ICON 48
+#define STICK_FIG1_ICON   56
+#define STICK_FIG2_ICON   64
+#define STICK_FIG3_ICON   72
+#define HEART_ICON        80
+
 static unsigned char icons8x8[] = {
    // Smiley face
    0b00111100,  //   1111  

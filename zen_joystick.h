@@ -42,7 +42,7 @@ _Bool zenJoystickButtonPressed (enum zenJoystickButton button);
 // Check if a button is released ("pushed" to "not pushed").
 // Return value:  true = released, false = not released, or unsuccessful file I/O.
 //
-_Bool zenJoystickButtonPressed (enum zenJoystickButton button);
+_Bool zenJoystickButtonReleased (enum zenJoystickButton button);
 
 // Get name string of button
 const char *zenJoystickButtonName (enum zenJoystickButton button);
