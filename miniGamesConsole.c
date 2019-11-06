@@ -10,10 +10,11 @@
 #include "ext_buttons.h"
 #include "icons8x8.h"
 #include "font8x8.h"
+#include "balanceGame.h"
 #include "catchGame.h"
 #include "simonGame.h"
 
-#define MAX_GAMES 2
+#define MAX_GAMES 3
 
 int game_selection = 0;
 _Bool game_running = false;
@@ -25,6 +26,7 @@ int main(int argc, char **argv)
 {
 	int potvalue;
 
+	zenAccelerometerInit();
 	zenJoystickInit();
 	zenBuzzerInit();
 	extPushButtonInit();
@@ -87,6 +89,12 @@ int main(int argc, char **argv)
 					extLED8x8DrawPixel(4, anim_count+2, 1);
 					extLED8x8DisplayUpdate();
 					break;
+
+				case 2:  // Balance game
+					extLED8x8FillPixel(0);
+					extLED8x8DrawPixel(3, 3, 1);
+					extLED8x8DisplayUpdate();
+					break;
 			}
 
 				// Increment animation count
@@ -105,6 +113,10 @@ int main(int argc, char **argv)
 
 					case 1:  // Catch game
 						catchGame_start();
+						break;
+
+					case 2:  // Balance game
+						balanceGame_start();
 						break;
 				}
 				game_running = true;
