@@ -6,6 +6,8 @@ static pthread_mutex_t catchGameStat = PTHREAD_MUTEX_INITIALIZER;
 static int catches = 0;
 static int attempts = 0;
 
+extern unsigned char font8x8[];
+
 //------------ functions ---------------------------------------
 //***** static functions ******************************
 
@@ -37,6 +39,19 @@ static void *catchGameThread()
 
 	catches = 0;
 	attempts = 0;
+
+	// 3, 2, 1 count down
+    reqDelay.tv_sec = 1;
+   	reqDelay.tv_nsec = 0;
+	extLED8x8LoadImage(&font8x8['3'*8]);
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
+	extLED8x8LoadImage(&font8x8['2'*8]);
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
+	extLED8x8LoadImage(&font8x8['1'*8]);
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
 
 	extLED8x8FillPixel(0);
 	drawCatcher(currpos, 1);

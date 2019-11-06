@@ -9,7 +9,7 @@
 #include "ext_8x8led.h"
 #include "ext_buttons.h"
 #include "icons8x8.h"
-//#include "font8x8.h"
+#include "font8x8.h"
 #include "catchGame.h"
 #include "simonGame.h"
 
