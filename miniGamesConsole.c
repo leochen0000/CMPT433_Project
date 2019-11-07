@@ -64,6 +64,10 @@ int main(int argc, char **argv)
 					case 1:  // Catch game
 						catchGame_stop();
 						break;
+
+					case 2:  // Balance game
+						balanceGame_stop();
+						break;
 				}
 				game_running = false;
 			}
