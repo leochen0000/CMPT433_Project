@@ -1,3 +1,6 @@
+// miniGamesConsole.c
+// Main program for "Mini Games Console" project.
+//
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -13,13 +16,15 @@
 #include "balanceGame.h"
 #include "catchGame.h"
 #include "simonGame.h"
+#include "snakeGame.h"
 
-#define MAX_GAMES 3
+#define MAX_GAMES 4
 
-int game_selection = 0;
-_Bool game_running = false;
 int anim_count = 0;
 int sample_count = 0;
+
+_Bool game_running = false;
+int game_selection = 0;
 unsigned char led_brightness;
 
 int main(int argc, char **argv)
@@ -68,6 +73,10 @@ int main(int argc, char **argv)
 					case 2:  // Balance game
 						balanceGame_stop();
 						break;
+
+					case 3:  // Snake game
+						snakeGame_stop();
+						break;
 				}
 				game_running = false;
 			}
@@ -79,7 +88,10 @@ int main(int argc, char **argv)
 			switch(game_selection) {
 				case 0:  // Simon game
 					extLED8x8FillPixel(0);
-					extLED8x8LoadImage(&(icons8x8[RIGHT_ARROW_ICON+(anim_count * 8)]));
+					if (anim_count < 3)
+						extLED8x8LoadImage(&(icons8x8[RIGHT_ARROW_ICON+(anim_count * 8)]));
+					else
+						extLED8x8LoadImage(&(icons8x8[RIGHT_ARROW_ICON+(3 * 8)]));
 					extLED8x8DisplayUpdate();
 					break;
 
@@ -90,21 +102,76 @@ int main(int argc, char **argv)
 					extLED8x8DrawPixel(3, 7, 1);
 					extLED8x8DrawPixel(4, 7, 1);
 					extLED8x8DrawPixel(5, 7, 1);
-					extLED8x8DrawPixel(4, anim_count+2, 1);
+					if (anim_count < 4)
+						extLED8x8DrawPixel(4, anim_count+2, 1);
+					else
+						extLED8x8DrawPixel(4, 6, 1);
 					extLED8x8DisplayUpdate();
 					break;
 
 				case 2:  // Balance game
 					extLED8x8FillPixel(0);
-					extLED8x8DrawPixel(3, 3, 1);
+					if (anim_count == 0)
+						extLED8x8DrawPixel(3, 3, 1);
+					else if (anim_count == 1)
+						extLED8x8DrawPixel(4, 4, 1);
+					else if (anim_count == 2)
+						extLED8x8DrawPixel(5, 4, 1);
+					else if (anim_count == 3)
+						extLED8x8DrawPixel(5, 3, 1);
+					else if (anim_count == 4)
+						extLED8x8DrawPixel(4, 3, 1);
+					else
+						extLED8x8DrawPixel(3, 4, 1);
+					extLED8x8DisplayUpdate();
+					break;
+
+				case 3:  // Snake game
+					extLED8x8FillPixel(0);
+					if (anim_count == 0) {
+						extLED8x8DrawPixel(3, 3, 1);
+						extLED8x8DrawPixel(4, 3, 1);
+						extLED8x8DrawPixel(5, 3, 1);
+						extLED8x8DrawPixel(6, 3, 1);
+					}
+					else if (anim_count == 1) {
+						extLED8x8DrawPixel(5, 3, 1);
+						extLED8x8DrawPixel(6, 3, 1);
+						extLED8x8DrawPixel(6, 4, 1);
+						extLED8x8DrawPixel(6, 5, 1);
+					}
+					else if (anim_count == 2) {
+						extLED8x8DrawPixel(6, 4, 1);
+						extLED8x8DrawPixel(6, 5, 1);
+						extLED8x8DrawPixel(5, 5, 1);
+						extLED8x8DrawPixel(4, 5, 1);
+					}
+					else if (anim_count == 3) {
+						extLED8x8DrawPixel(5, 5, 1);
+						extLED8x8DrawPixel(4, 5, 1);
+						extLED8x8DrawPixel(3, 5, 1);
+						extLED8x8DrawPixel(3, 4, 1);
+					}
+					else if (anim_count == 4) {
+						extLED8x8DrawPixel(3, 5, 1);
+						extLED8x8DrawPixel(3, 4, 1);
+						extLED8x8DrawPixel(3, 3, 1);
+						extLED8x8DrawPixel(4, 3, 1);
+					}
+					else {
+						extLED8x8DrawPixel(3, 4, 1);
+						extLED8x8DrawPixel(3, 3, 1);
+						extLED8x8DrawPixel(4, 3, 1);
+						extLED8x8DrawPixel(5, 3, 1);
+					}
 					extLED8x8DisplayUpdate();
 					break;
 			}
 
 				// Increment animation count
-			if (++sample_count == 50) {
+			if (++sample_count == 25) {
 				sample_count = 0;
-				if (++anim_count == 4)
+				if (++anim_count == 6)
 					anim_count = 0;
 			}
 
@@ -121,6 +188,10 @@ int main(int argc, char **argv)
 
 					case 2:  // Balance game
 						balanceGame_start();
+						break;
+
+					case 3:  // Snake game
+						snakeGame_start();
 						break;
 				}
 				game_running = true;
@@ -139,6 +210,24 @@ int main(int argc, char **argv)
 			if (extPushButtonPressed(PUSHBUTTON_SELECT) == true) {
 				if (++game_selection == MAX_GAMES)
 					game_selection = 0;
+
+				switch(game_selection) {
+					case 0:  // Simon game
+						printf("'Simon' game selected\n");
+						break;
+
+					case 1:  // Catch game
+						printf("'Catch' game selected\n");
+						break;
+
+					case 2:  // Balance game
+						printf("'Balance' game selected\n");
+						break;
+
+					case 3:  // Snake game
+						printf("'Snake' game selected\n");
+						break;
+				}
 			}
 		}
 

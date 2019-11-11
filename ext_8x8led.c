@@ -1,4 +1,5 @@
-// By Dane Lim
+// ext_8x8led.c
+// Routines/definitions for external 8x8 LED display
 #include "ext_8x8led.h"
 
 //------------ variables and definitions -----------------------
@@ -436,7 +437,7 @@ void extLED8x8ScrollText(char *txtstr, unsigned char *fontset, int scrollmsdelay
     reqDelay.tv_nsec = scrollmsdelay*1000000;
 
 	// Go through each character
-	while (*txtstr != 0) {
+	while (*(txtstr+1) != 0) {
 		unsigned char fontchar1[8];
 		unsigned char fontchar2[8];
 
@@ -494,9 +495,29 @@ void extLED8x8ScrollText(char *txtstr, unsigned char *fontset, int scrollmsdelay
 		txtstr++;
 	}
 
-	extLED8x8FillPixel(0);
+	nanosleep(&reqDelay, (struct timespec *) NULL);
+}
+
+
+//*****************************************************
+// Countdown 3,2,1
+//*****************************************************
+void extLED8x8CountDown321(unsigned char *font)
+{
+    struct timespec reqDelay;
+    reqDelay.tv_sec = 1;
+   	reqDelay.tv_nsec = 0;
+
+	extLED8x8LoadImage(&(font['3'*8]));
 	extLED8x8DisplayUpdate();
 	nanosleep(&reqDelay, (struct timespec *) NULL);
+	extLED8x8LoadImage(&(font['2'*8]));
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
+	extLED8x8LoadImage(&(font['1'*8]));
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
+
 }
 
 

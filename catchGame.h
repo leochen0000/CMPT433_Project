@@ -1,5 +1,5 @@
 // catchGame.h
-// Module to spawn a thread to listen to check and process Zen joystick and accelerometer inputs.
+// Module to start/stop the "Catch" game thread and provide routines to retrieve game data.
 
 #ifndef _CATCHGAME_H_
 #define _CATCHGAME_H_
@@ -26,8 +26,14 @@ void catchGame_start(void);
 //
 void catchGame_stop(void);
 
-// Get score
+// Get game data
+// *attempt = number of balls dropped
+// *catch = number of balls caught
+// *ballx = current ball X position (0 to 7), 0 is leftmost, 7 is rightmost LED dot
+// *bally = current ball Y position (0 to 7), 0 is uppermost, 7 is lowermost LED dot
+// *catchx = current catcher X position (0 to 7), 0 is leftmost, 7 is rightmost LED dot
+//           (catcher Y position is fixed at 7)
 //
-void catchGame_GetScore(int *attempts, int *catches);
+void catchGame_GetData(int *attempt, int *catch, int *ballx, int *bally, int *catchx);
 
 #endif

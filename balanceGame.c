@@ -1,8 +1,12 @@
+// balanceGame.c
+// Module to start/stop the "Balance" game thread and provide routines to retrieve game data.
 #include "balanceGame.h"
 
 //------------ variables and definitions -----------------------
 static pthread_t balanceGame_id;
 static pthread_mutex_t balanceGameStat = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t balanceGameData = PTHREAD_MUTEX_INITIALIZER;
+static int xpos, ypos;
 
 extern unsigned char font8x8[];
 
@@ -15,21 +19,10 @@ extern unsigned char font8x8[];
 static void *balanceGameThread()
 {
     struct timespec reqDelay;
-	unsigned int xpos, ypos;
 	int xval, yval, zval;
 
 	// 3, 2, 1 count down
-    reqDelay.tv_sec = 1;
-   	reqDelay.tv_nsec = 0;
-	extLED8x8LoadImage(&font8x8['3'*8]);
-	extLED8x8DisplayUpdate();
-	nanosleep(&reqDelay, (struct timespec *) NULL);
-	extLED8x8LoadImage(&font8x8['2'*8]);
-	extLED8x8DisplayUpdate();
-	nanosleep(&reqDelay, (struct timespec *) NULL);
-	extLED8x8LoadImage(&font8x8['1'*8]);
-	extLED8x8DisplayUpdate();
-	nanosleep(&reqDelay, (struct timespec *) NULL);
+	extLED8x8CountDown321(font8x8);
 
 	// Draw ball in center of matrix
 	extLED8x8FillPixel(0);
@@ -44,23 +37,27 @@ static void *balanceGameThread()
 	while (1) {
 		zenAccelerometerRead(&xval, &yval, &zval);
 
-		if (xval > 128) {
-			if (xpos < 7)
-				xpos++;
-		}
-		else if (xval < -128) {
-			if (xpos > 0)
-				xpos--;
-		}
+		pthread_mutex_lock(&balanceGameData);
+		{
+			if (xval > 128) {
+				if (xpos < 7)
+					xpos++;
+			}
+			else if (xval < -128) {
+				if (xpos > 0)
+					xpos--;
+			}
 
-		if (yval < -128) {
-			if (ypos < 7)
-				ypos++;
+			if (yval < -128) {
+				if (ypos < 7)
+					ypos++;
+			}
+			else if (yval > 128) {
+				if (ypos > 0)
+					ypos--;
+			}
 		}
-		else if (yval > 128) {
-			if (ypos > 0)
-				ypos--;
-		}
+		pthread_mutex_unlock(&balanceGameData);
 
 		extLED8x8FillPixel(0);
 		extLED8x8DrawPixel(xpos, ypos, 1);
@@ -88,7 +85,7 @@ static void *balanceGameThread()
 
 void balanceGame_start (void)
 {
-    printf("Starting game of 'Catch'\n");
+    printf("Starting game of 'Balance'\n");
 	pthread_mutex_init(&balanceGameStat, NULL);
 
 	// Lock mutex used by thread to check for request to end the thread
@@ -108,6 +105,17 @@ void balanceGame_stop (void)
 
 	// Wait for thread to finish
 	pthread_join(balanceGame_id, NULL);
+}
+
+
+void balanceGame_GetData (int *ballx, int *bally)
+{
+	pthread_mutex_lock(&balanceGameData);
+	{
+		*ballx = xpos;
+		*bally = ypos;
+	}
+	pthread_mutex_unlock(&balanceGameData);
 }
 
 

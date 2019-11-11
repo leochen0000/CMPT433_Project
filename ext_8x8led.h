@@ -1,6 +1,5 @@
 // ext_8x8led.h
 // Routines/definitions for external 8x8 LED display
-// by Dane Lim
 
 #ifndef EXT_8X8LED_H
 #define EXT_8X8LED_H
@@ -114,6 +113,11 @@ void extLED8x8LoadImage(unsigned char *img);  // img is pointer to 8-byte unsign
 // scrolldir:  scroll direction
 //*****************************************************
 void extLED8x8ScrollText(char *txtstr, unsigned char *fontset, int scrollmsdelay, enum scroll_direction scrolldir);
+
+//*****************************************************
+// Countdown 3,2,1
+//*****************************************************
+void extLED8x8CountDown321(unsigned char *font);
 
 #endif
 
