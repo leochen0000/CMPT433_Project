@@ -13,6 +13,7 @@
 #include "zen_joystick.h"
 #include "zen_buzzer.h"
 #include "ext_8x8led.h"
+#include "ext_buttons.h"
 
 void simonGame_start(void);
 void simonGame_stop(void);

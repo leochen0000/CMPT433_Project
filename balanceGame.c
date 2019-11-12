@@ -21,9 +21,6 @@ static void *balanceGameThread()
     struct timespec reqDelay;
 	int xval, yval, zval;
 
-	// 3, 2, 1 count down
-	extLED8x8CountDown321(font8x8);
-
 	// Draw ball in center of matrix
 	extLED8x8FillPixel(0);
 	xpos = 3;
@@ -86,6 +83,10 @@ static void *balanceGameThread()
 void balanceGame_start (void)
 {
     printf("Starting game of 'Balance'\n");
+
+	// 3, 2, 1 count down
+    extLED8x8CountDown321(font8x8);
+
 	pthread_mutex_init(&balanceGameStat, NULL);
 
 	// Lock mutex used by thread to check for request to end the thread
@@ -102,6 +103,9 @@ void balanceGame_stop (void)
 	pthread_mutex_unlock(&balanceGameStat);
 
     printf("Stopping game of 'Balance'\n");
+
+	// Exit game logo
+    extLED8x8ExitGame(font8x8);
 
 	// Wait for thread to finish
 	pthread_join(balanceGame_id, NULL);

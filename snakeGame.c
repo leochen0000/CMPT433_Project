@@ -137,9 +137,6 @@ static void *snakeGameThread()
 	// Initialize snake's body
 	initSnakeBody();
 
-	// 3, 2, 1 count down
-	extLED8x8CountDown321(font8x8);
-
 	// Draw ball in center of matrix
 	generateNextAppleCoord();
 	extLED8x8FillPixel(0);
@@ -228,6 +225,10 @@ static void *snakeGameThread()
 void snakeGame_start (void)
 {
     printf("Starting game of 'Snake'\n");
+
+	// 3, 2, 1 count down
+    extLED8x8CountDown321(font8x8);
+
 	pthread_mutex_init(&snakeGameStat, NULL);
 
 	// Lock mutex used by thread to check for request to end the thread
@@ -244,6 +245,9 @@ void snakeGame_stop (void)
 	pthread_mutex_unlock(&snakeGameStat);
 
     printf("Stopping game of 'Snake'\n");
+
+	// Exit game logo
+    extLED8x8ExitGame(font8x8);
 
 	// Wait for thread to finish
 	pthread_join(snakeGame_id, NULL);

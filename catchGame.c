@@ -45,9 +45,6 @@ static void *catchGameThread()
 	attempts = 0;
 	currposx = 3;
 
-	// 3, 2, 1 count down
-	extLED8x8CountDown321(font8x8);
-
 	// Draw catcher
 	extLED8x8FillPixel(0);
 	drawCatcher(currposx, 1);
@@ -165,6 +162,10 @@ static void *catchGameThread()
 void catchGame_start (void)
 {
     printf("Starting game of 'Catch'\n");
+	
+	// 3, 2, 1 count down
+    extLED8x8CountDown321(font8x8);
+
 	pthread_mutex_init(&catchGameStat, NULL);
 
 	// Lock mutex used by thread to check for request to end the thread
@@ -181,6 +182,9 @@ void catchGame_stop (void)
 	pthread_mutex_unlock(&catchGameStat);
 
     printf("Stopping game of 'Catch'\n");
+
+	// Exit game logo
+    extLED8x8ExitGame(font8x8);
 
 	// Wait for thread to finish
 	pthread_join(catchGame_id, NULL);
