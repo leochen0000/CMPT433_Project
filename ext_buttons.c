@@ -12,8 +12,10 @@ struct PushButtonInfo
 
 static const struct PushButtonInfo pushbuttons[] =
 {
-    {"SELECT",       66},
-    {"ENTER_EXIT",   67}
+//    {"SELECT",       66},
+    {"SELECT",       49},
+//    {"ENTER_EXIT",   67}
+    {"ENTER_EXIT",   15}
 };
 
 static _Bool previous_state[PUSH_MAXBUTTONS];
