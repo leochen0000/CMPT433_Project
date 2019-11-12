@@ -517,6 +517,27 @@ void extLED8x8CountDown321(unsigned char *font)
 	extLED8x8LoadImage(&(font['1'*8]));
 	extLED8x8DisplayUpdate();
 	nanosleep(&reqDelay, (struct timespec *) NULL);
+}
+
+
+//*****************************************************
+// LED logo for exiting a game
+//*****************************************************
+void extLED8x8ExitGame(unsigned char *font)
+{
+    struct timespec reqDelay;
+    reqDelay.tv_sec = 1;
+   	reqDelay.tv_nsec = 0;
+
+	extLED8x8LoadImage(&(font['B'*8]));
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
+	extLED8x8LoadImage(&(font['Y'*8]));
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
+	extLED8x8LoadImage(&(font['E'*8]));
+	extLED8x8DisplayUpdate();
+	nanosleep(&reqDelay, (struct timespec *) NULL);
 
 }
 
