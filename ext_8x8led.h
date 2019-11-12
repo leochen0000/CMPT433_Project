@@ -119,5 +119,10 @@ void extLED8x8ScrollText(char *txtstr, unsigned char *fontset, int scrollmsdelay
 //*****************************************************
 void extLED8x8CountDown321(unsigned char *font);
 
+//*****************************************************
+// LED logo for exiting a game
+//*****************************************************
+void extLED8x8ExitGame(unsigned char *font);
+
 #endif
 
