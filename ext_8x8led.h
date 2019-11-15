@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <time.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -123,6 +124,11 @@ void extLED8x8CountDown321(unsigned char *font);
 // LED logo for exiting a game
 //*****************************************************
 void extLED8x8ExitGame(unsigned char *font);
+
+//*****************************************************
+// Get local display buffer data
+//*****************************************************
+void extLED8x8GetLocalBuffer(unsigned char *font);
 
 #endif
 

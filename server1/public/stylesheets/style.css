@@ -1,0 +1,213 @@
+body {
+	width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+h1, h2 {
+	margin-bottom: 1px;
+	padding-bottom: 1px;
+}
+
+#content {
+	margin-top: 10pt;
+}
+
+#status-box {
+	float: right;
+	width: 500px;
+	min-height: 200pt;
+	border: thin black solid;
+	background-color: #f3f3f3;
+	padding-left: 10pt;
+	padding-right: 10pt;
+}
+
+#left-box {
+	margin-right: 300px;	
+	border: thin black solid;
+	padding-left: 10pt;
+	padding-right: 10pt;
+	min-height: 200pt;
+}
+
+#game-box {
+	margin-right: 300px;	
+	width: 240px;
+	height: 240px;
+	border: thin white solid;
+	padding-left: 10pt;
+	padding-right: 10pt;
+	background: black;
+}
+
+#error-box {
+	border: thin black solid;
+	clear: both;
+	background-color: red;
+	padding-left: 10pt;
+	padding-right: 10pt;
+	min-height: 100pt;
+	margin-top: 20px;
+	display: none;
+}
+
+#circle0 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle1 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle2 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle3 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle4 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle5 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle6 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle7 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle8 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #0000FF;
+}
+
+#circle9 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle10 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #00F000;
+}
+
+#circle11 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle12 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #00F000;
+}
+
+#circle13 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #008000;
+}
+
+#circle14 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #00F000;
+}
+
+#circle15 {
+	float: left;
+	width: 30px;
+	height: 30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	background: #FF0000;
+}
+

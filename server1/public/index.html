@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+	<title>Mini-Games COnsole</title>
+	<meta charset="UTF-8">
+	<link rel='stylesheet' href='/stylesheets/style.css'></link>
+</head>
+
+<body>
+<form>
+	<h1>Mini-Games Console</h1>
+	<div>by 'Glasses' Group</div>
+
+	<div id='content'>
+		<div id='status-box'>
+			<h2>Game Status</h2>
+			<div id='status'>
+			<p>Running:        <strong><span id="running"></span></strong></p> 
+			<p>Game Selected:  <strong><span id="gameselect"></span></strong></p> 
+			</div>
+		</div>
+		<canvas width="248" height="248">
+		</canvas>
+		<div id='error-box'>
+			<h2>Server Error</h2>
+			<p>Please resolve the following error before continuing:</p>
+			<div><code id='error-text'></code></div>
+		</div>
+	</div>
+</form>
+	
+	<script src='/socket.io/socket.io.js' type='text/javascript'></script>
+	<!--  // HTTPS CHANGE #5: Load the HTTPS version of jquery -->
+	<script src='https://code.jquery.com/jquery-1.8.0.min.js' type='text/javascript'></script>
+	<script src='javascripts/miniGamesConsole_ui.js' type='text/javascript'></script>
+</body>
+</html>

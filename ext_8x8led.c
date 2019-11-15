@@ -7,6 +7,7 @@ static unsigned char localbuffer[8];
 static unsigned char displaybuffer[17];  // 1 command byte + 16 bytes (rows), 8 bits (columns) per byte
 static int i2cFileDesc;
 static enum display_rotation disprotation = DISPLAY_ROTATE0;
+static pthread_mutex_t localbufferStat = PTHREAD_MUTEX_INITIALIZER;
 
 
 //------------ functions ---------------------------------------
@@ -383,12 +384,16 @@ void extLED8x8SetDisplayRotation(enum display_rotation rotval)
 //*****************************************************
 void extLED8x8FillPixel(unsigned char pixelval)
 {
-	for (int k = 0; k < 8; k++) {
-		if (pixelval)
-			localbuffer[k] = 0xFF;
-		else
-			localbuffer[k] = 0x00;
+	pthread_mutex_lock(&localbufferStat);
+	{
+		for (int k = 0; k < 8; k++) {
+			if (pixelval)
+				localbuffer[k] = 0xFF;
+			else
+				localbuffer[k] = 0x00;
+		}
 	}
+	pthread_mutex_unlock(&localbufferStat);
 }
 
 
@@ -399,15 +404,19 @@ void extLED8x8FillPixel(unsigned char pixelval)
 //*****************************************************
 void extLED8x8DrawPixel(unsigned int x, unsigned int y, unsigned char pixelval)
 {
-	// Only draw pixel if it is inbounds (x=0 to 7, y=0 to 7)
-	if ((x < 8) && (y < 8)) {
-		if (pixelval) {
-			localbuffer[y] |= (0x80 >> x);
-		}
-		else {
-			localbuffer[y] &= ~(0x80 >> x);
+	pthread_mutex_lock(&localbufferStat);
+	{
+		// Only draw pixel if it is inbounds (x=0 to 7, y=0 to 7)
+		if ((x < 8) && (y < 8)) {
+			if (pixelval) {
+				localbuffer[y] |= (0x80 >> x);
+			}
+			else {
+				localbuffer[y] &= ~(0x80 >> x);
+			}
 		}
 	}
+	pthread_mutex_unlock(&localbufferStat);
 
 }
 
@@ -417,9 +426,13 @@ void extLED8x8DrawPixel(unsigned int x, unsigned int y, unsigned char pixelval)
 //*****************************************************
 void extLED8x8LoadImage(unsigned char *img)
 {
-	for (int k = 0; k < 8; k++) {
-		localbuffer[k] = img[k];
+	pthread_mutex_lock(&localbufferStat);
+	{
+		for (int k = 0; k < 8; k++) {
+			localbuffer[k] = img[k];
+		}
 	}
+	pthread_mutex_unlock(&localbufferStat);
 }
 
 
@@ -453,39 +466,43 @@ void extLED8x8ScrollText(char *txtstr, unsigned char *fontset, int scrollmsdelay
 		// Scroll through 8 pixels of font character
 		for (int pixoffset = 0; pixoffset < 8; pixoffset++) {
 
-			// Compose local buffer according scroll direction
-			if (scrolldir == SCROLL_LEFT) {
-				for (int line = 0; line < 8; line++) {
-					unsigned char tmpbyte;
-					tmpbyte = fontchar1[line] << pixoffset;
-					tmpbyte = tmpbyte | (fontchar2[line] >> (8 - pixoffset));
-					localbuffer[line] = tmpbyte;
+			pthread_mutex_lock(&localbufferStat);
+			{
+				// Compose local buffer according scroll direction
+				if (scrolldir == SCROLL_LEFT) {
+					for (int line = 0; line < 8; line++) {
+						unsigned char tmpbyte;
+						tmpbyte = fontchar1[line] << pixoffset;
+						tmpbyte = tmpbyte | (fontchar2[line] >> (8 - pixoffset));
+						localbuffer[line] = tmpbyte;
+					}
+				}
+				else if (scrolldir == SCROLL_RIGHT) {
+					for (int line = 0; line < 8; line++) {
+						unsigned char tmpbyte;
+						tmpbyte = fontchar1[line] >> pixoffset;
+						tmpbyte = tmpbyte | (fontchar2[line] << (8 - pixoffset));
+						localbuffer[line] = tmpbyte;
+					}
+				}
+				else if (scrolldir == SCROLL_UP) {
+					for (int line = 0; line < 8; line++) {
+						if (line < (8 - pixoffset))
+							localbuffer[line] = fontchar1[line+pixoffset];
+						else
+							localbuffer[line] = fontchar2[line-(8-pixoffset)];
+					}
+				}
+				else {  // SCROLL_DOWN
+					for (int line = 0; line < 8; line++) {
+						if (line < pixoffset)
+							localbuffer[line] = fontchar2[line+(8-pixoffset)];
+						else
+							localbuffer[line] = fontchar1[line-pixoffset];
+					}
 				}
 			}
-			else if (scrolldir == SCROLL_RIGHT) {
-				for (int line = 0; line < 8; line++) {
-					unsigned char tmpbyte;
-					tmpbyte = fontchar1[line] >> pixoffset;
-					tmpbyte = tmpbyte | (fontchar2[line] << (8 - pixoffset));
-					localbuffer[line] = tmpbyte;
-				}
-			}
-			else if (scrolldir == SCROLL_UP) {
-				for (int line = 0; line < 8; line++) {
-					if (line < (8 - pixoffset))
-						localbuffer[line] = fontchar1[line+pixoffset];
-					else
-						localbuffer[line] = fontchar2[line-(8-pixoffset)];
-				}
-			}
-			else {  // SCROLL_DOWN
-				for (int line = 0; line < 8; line++) {
-					if (line < pixoffset)
-						localbuffer[line] = fontchar2[line+(8-pixoffset)];
-					else
-						localbuffer[line] = fontchar1[line-pixoffset];
-				}
-			}
+			pthread_mutex_unlock(&localbufferStat);
 
 			// Update display
 			extLED8x8DisplayUpdate();
@@ -542,3 +559,15 @@ void extLED8x8ExitGame(unsigned char *font)
 }
 
 
+//*****************************************************
+// Get local display buffer data
+//*****************************************************
+void extLED8x8GetLocalBuffer(unsigned char *copybuff)
+{
+	pthread_mutex_lock(&localbufferStat);
+	{
+		for (int k = 0; k < 8; k++)
+			copybuff[k] = localbuffer[k];
+	}
+	pthread_mutex_unlock(&localbufferStat);
+}

@@ -13,6 +13,7 @@
 #include "ext_buttons.h"
 #include "icons8x8.h"
 #include "font8x8.h"
+#include "udpServer1.h"
 #include "balanceGame.h"
 #include "catchGame.h"
 #include "simonGame.h"
@@ -26,6 +27,13 @@ int sample_count = 0;
 _Bool game_running = false;
 int game_selection = 0;
 unsigned char led_brightness;
+char *(gamename[]) = {
+	"SIMON",
+	"CATCH",
+	"BALANCE",
+	"SNAKE"
+};
+
 
 int main(int argc, char **argv)
 {
@@ -55,6 +63,8 @@ int main(int argc, char **argv)
 	// Set the rotation of the 8x8 LED display
 	extLED8x8SetDisplayRotation(DISPLAY_ROTATE0);
 
+	// Start UDP listener
+	UDPServer_startListening();
 
 	// Main game loop
     while (1) {
@@ -177,6 +187,7 @@ int main(int argc, char **argv)
 
 				// Check if ENTER is pressed to run game
 			if (extPushButtonPressed(PUSHBUTTON_ENTER_EXIT) == true) {
+				game_running = true;
 				switch(game_selection) {
 					case 0:  // Simon game
 						simonGame_start();
@@ -194,7 +205,6 @@ int main(int argc, char **argv)
 						snakeGame_start();
 						break;
 				}
-				game_running = true;
 			}
 
 				// Read potentiometer and adjust 8x8 LED brightness
@@ -211,23 +221,7 @@ int main(int argc, char **argv)
 				if (++game_selection == MAX_GAMES)
 					game_selection = 0;
 
-				switch(game_selection) {
-					case 0:  // Simon game
-						printf("'Simon' game selected\n");
-						break;
-
-					case 1:  // Catch game
-						printf("'Catch' game selected\n");
-						break;
-
-					case 2:  // Balance game
-						printf("'Balance' game selected\n");
-						break;
-
-					case 3:  // Snake game
-						printf("'Snake' game selected\n");
-						break;
-				}
+				printf("'%s' game selected\n", gamename[game_selection]);
 			}
 		}
 

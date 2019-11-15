@@ -1,0 +1,76 @@
+"use strict";
+// BeatBox server for HTTPS, for interacting with BeatBox program
+
+var PORT_NUMBER = 8088;
+
+// Use HTTPS
+var http = require('https');
+
+var fs   = require('fs');
+var path = require('path');
+var mime = require('mime');
+
+
+// Create options for the authentication
+var options = {
+		key:  fs.readFileSync('./key.pem'),
+		cert: fs.readFileSync('./key-cert.pem')
+}
+
+
+/* 
+ * Create the web server
+ */
+var server = http.createServer(options, function(request, response) {
+	var filePath = false;
+	
+	if (request.url == '/') {
+		filePath = 'public/index.html';
+	} else {
+		filePath = 'public' + request.url;
+	}
+	
+	var absPath = './' + filePath;
+	serveWebPage(response, absPath);
+});
+
+server.listen(PORT_NUMBER, function() {
+	console.log("Server listening on port " + PORT_NUMBER);
+});
+
+function serveWebPage(response, absPath) {
+	fs.exists(absPath, function(exists) {
+		if (exists) {
+			fs.readFile(absPath, function(err, data) {
+				if (err) {
+					send404(response);
+				} else {
+					sendFile(response, absPath, data);
+				}
+			});
+		} else {
+			send404(response);
+		}
+	});
+}
+
+function send404(response) {
+	response.writeHead(404, {'Content-Type': 'text/plain'});
+	response.write('Error 404: resource not found.');
+	response.end();
+}
+
+function sendFile(response, filePath, fileContents) {
+	response.writeHead(
+			200,
+			{"content-type": mime.lookup(path.basename(filePath))}
+		);
+	response.end(fileContents);
+}
+
+
+/*
+ * Create the BeatBox server to listen for the websocket
+ */
+var minigamesServer = require('./lib/minigames_server');
+minigamesServer.listen(server);
