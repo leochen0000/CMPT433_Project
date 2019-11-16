@@ -14,6 +14,7 @@
 #include "zen_buzzer.h"
 #include "ext_8x8led.h"
 #include "ext_buttons.h"
+#include "zen_segdisplay.h"
 
 void simonGame_start(void);
 void simonGame_stop(void);
