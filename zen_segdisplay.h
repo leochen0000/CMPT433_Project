@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
-
+#include <pthread.h>
 
 //------- Enums and definitions --------------------
 // Selection of left/right digit
@@ -34,23 +34,28 @@ enum zenSegDigit
 // Initializes 2-digit x 15-segment LED display
 // Return value:  true=success, false=fail
 //
-_Bool zenSegDisplayInit();              // Must be called before using functions
+_Bool zenSegDisplayInit();  // Must be called before using functions
 
 // Turn on 15-segment digits
 // Return value:  true=success, false=fail
 //
-_Bool zenSegDisplayDigitOn(enum zenSegDigit digit);
+//_Bool zenSegDisplayDigitOn(enum zenSegDigit digit);
 
 // Turn off 15-segment digits
 // Return value:  true=success, false=fail
 //
-_Bool zenSegDisplayDigitOff(enum zenSegDigit digit);
+//_Bool zenSegDisplayDigitOff(enum zenSegDigit digit);
 
 // Display a numeric digit.
 // 0 <= num <= 9.
 // Return value:  true=success, false=fail
 //
-_Bool zenSegDisplayNumDigit(int num);
+//_Bool zenSegDisplayNumDigit(int num);
+
+void zenSegDisplayUpdateNum(int newNum);
+
+void zenSegDisplayStart();
+void zenSegDisplayStop();
 
 #endif
 
