@@ -9,6 +9,7 @@
 #include "zen_buzzer.h"
 #include "zen_accelerometer.h"
 #include "zen_potentiometer.h"
+#include "zen_segdisplay.h"
 #include "ext_8x8led.h"
 #include "ext_buttons.h"
 #include "icons8x8.h"
@@ -39,6 +40,8 @@ int main(int argc, char **argv)
 {
 	int potvalue;
 
+	zenSegDisplayInit();
+	zenSegDisplayStart();
 	zenAccelerometerInit();
 	zenJoystickInit();
 	zenBuzzerInit();
@@ -97,6 +100,7 @@ int main(int argc, char **argv)
 				// Display game icon(s)
 			switch(game_selection) {
 				case 0:  // Simon game
+					zenSegDisplayUpdateNum(0); // Game #0
 					extLED8x8FillPixel(0);
 					if (anim_count < 3)
 						extLED8x8LoadImage(&(icons8x8[RIGHT_ARROW_ICON+(anim_count * 8)]));
@@ -106,6 +110,7 @@ int main(int argc, char **argv)
 					break;
 
 				case 1:  // Catch game
+					zenSegDisplayUpdateNum(1); // Game #1
 					extLED8x8FillPixel(0);
 					extLED8x8DrawPixel(3, 6, 1);
 					extLED8x8DrawPixel(5, 6, 1);
@@ -120,6 +125,7 @@ int main(int argc, char **argv)
 					break;
 
 				case 2:  // Balance game
+					zenSegDisplayUpdateNum(2); // Game #1
 					extLED8x8FillPixel(0);
 					if (anim_count == 0)
 						extLED8x8DrawPixel(3, 3, 1);
@@ -137,6 +143,7 @@ int main(int argc, char **argv)
 					break;
 
 				case 3:  // Snake game
+					zenSegDisplayUpdateNum(3); // Game #3
 					extLED8x8FillPixel(0);
 					if (anim_count == 0) {
 						extLED8x8DrawPixel(3, 3, 1);
