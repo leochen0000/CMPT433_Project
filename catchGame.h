@@ -15,6 +15,7 @@
 #include "zen_joystick.h"
 #include "zen_buzzer.h"
 #include "ext_8x8led.h"
+#include "zen_segdisplay.h"
 
 //------- function prototypes ----------------------
 
