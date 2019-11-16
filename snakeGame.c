@@ -144,6 +144,9 @@ static void *snakeGameThread()
 	extLED8x8DrawPixel(apple.x, apple.y, 1);
 	extLED8x8DisplayUpdate();
 
+	// Initialize score on seg display
+	zenSegDisplayUpdateNum(apples_consumed);
+
     reqDelay.tv_sec = 0;
    	reqDelay.tv_nsec = 10000000;  // sampling rate
 
@@ -193,6 +196,7 @@ static void *snakeGameThread()
 							apples_consumed++;
 							generateNextAppleCoord();
 							printf("Apples eaten:  %d\n", apples_consumed);
+							zenSegDisplayUpdateNum(apples_consumed); // Update score to seg display
 							zenBuzzerBeep(440, 100);
 						}
 						extLED8x8DrawPixel(apple.x, apple.y, 1);
