@@ -16,6 +16,7 @@
 #include "zen_accelerometer.h"
 #include "zen_buzzer.h"
 #include "ext_8x8led.h"
+#include "zen_segdisplay.h"
 
 
 //------- Enums and definitions --------------------
