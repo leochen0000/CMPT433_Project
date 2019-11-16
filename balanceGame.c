@@ -13,6 +13,14 @@ extern unsigned char font8x8[];
 //------------ functions ---------------------------------------
 //***** static functions ******************************
 
+int combine(int x, int y) {
+	int times = 1;
+	while (times <= y) {
+		times *= 10;
+	}
+	return x*times + y;
+}
+
 //-------------------------------------------------------
 // "Balance the ball" game.
 //-------------------------------------------------------
@@ -28,6 +36,10 @@ static void *balanceGameThread()
 	extLED8x8DrawPixel(xpos, ypos, 1);
 	extLED8x8DisplayUpdate();
 
+	// Initalize seg display. 
+	// Bottom Left pixel is (0,0) top right pixel is (8,8)
+	zenSegDisplayUpdateNum(combine((xpos + 1), (ypos + 1)));
+
     reqDelay.tv_sec = 0;
    	reqDelay.tv_nsec = 100000000;  // 100ms sampling rate
 
@@ -37,22 +49,28 @@ static void *balanceGameThread()
 		pthread_mutex_lock(&balanceGameData);
 		{
 			if (xval > 128) {
-				if (xpos < 7)
+				if (xpos < 7) {
 					xpos++;
+				}
 			}
 			else if (xval < -128) {
-				if (xpos > 0)
+				if (xpos > 0) {
 					xpos--;
+				}
 			}
 
 			if (yval < -128) {
-				if (ypos < 7)
+				if (ypos < 7) {
 					ypos++;
+				}
 			}
 			else if (yval > 128) {
-				if (ypos > 0)
+				if (ypos > 0) {
 					ypos--;
+				}
 			}
+
+			zenSegDisplayUpdateNum(combine((xpos + 1), (ypos + 1))); // Update x y coordinates to seg display
 		}
 		pthread_mutex_unlock(&balanceGameData);
 

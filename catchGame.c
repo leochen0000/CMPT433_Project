@@ -50,6 +50,9 @@ static void *catchGameThread()
 	drawCatcher(currposx, 1);
 	extLED8x8DisplayUpdate();
 
+	// Initialize catch score on seg display
+	zenSegDisplayUpdateNum(catches); 
+
     reqDelay.tv_sec = 0;
    	reqDelay.tv_nsec = 100000000;  // 100ms sampling rate
 
@@ -80,6 +83,7 @@ static void *catchGameThread()
 					if (ballposx == currposx) {
 						zenBuzzerBeep(440, 100);
 						catches++;
+						zenSegDisplayUpdateNum(catches); // Update score to seg display
 					}
 					else {
 						zenBuzzerBeep(110, 300);

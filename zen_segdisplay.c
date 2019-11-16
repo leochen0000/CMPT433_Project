@@ -6,12 +6,18 @@ static char *gpio44_outpath = "/sys/class/gpio/gpio44/value";  // Enable for rig
 
 static int i2cFileDesc;
 
-	// REG14 and REG15 pair of values for each digit
+// REG14 and REG15 pair of values for each digit
 struct segdispregs
 {
 	unsigned char reg14;
 	unsigned char reg15;
 };
+
+static int leftDigitNum = 0;
+static int rightDigitNum = 0;
+
+static pthread_t zenDisplay_id;
+static pthread_mutex_t zenDisplay_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Look-up table for REG14 and REG15 registers for values 0 to 9
 //      Bit 76543210
@@ -40,7 +46,6 @@ static struct segdispregs segdisp_lookup[] =
 	{0x90, 0x8E}   // 9:  C--J----, F---NAB-
 };
 
-
 //------------ functions ---------------------------------------
 //***** static functions ******************************
 static void assert_zenSegDigit_OK (enum zenSegDigit digit)
@@ -53,7 +58,171 @@ static void assert_zenSegDigitValue_OK (int value)
     assert((value >= 0) && (value <= 9));
 }
 
+static unsigned int count(unsigned int i)
+{
+    unsigned int ret = 1;
+    while (i /= 10) ret++;
+    return ret;
+}
 
+//*****************************************************
+// Turn on 15-segment digits
+// Return value:  true=success, false=fail
+//*****************************************************
+static _Bool zenSegDisplayDigitOn(enum zenSegDigit digit)
+{
+	FILE *GPIOFile;
+
+	// Parameters range checking
+	assert_zenSegDigit_OK(digit);
+
+	if ((digit == SEGDIGIT_LEFT) ||
+	    (digit == SEGDIGIT_BOTH))
+	{
+		GPIOFile = fopen(gpio61_outpath, "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR OPENING %s.\n", gpio61_outpath);
+			return false;
+		}
+		fprintf(GPIOFile, "1");  // Set GPIO_61 to 1
+		fclose(GPIOFile);
+	}
+
+	if ((digit == SEGDIGIT_RIGHT) ||
+	    (digit == SEGDIGIT_BOTH))
+	{
+		GPIOFile = fopen(gpio44_outpath, "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR OPENING %s.\n", gpio44_outpath);
+			return false;
+		}
+		fprintf(GPIOFile, "1");  // Set GPIO_44 to 1
+		fclose(GPIOFile);
+	}
+
+	return true;
+}
+
+//*****************************************************
+// Turn off 15-segment digits
+// Return value:  true=success, false=fail
+//*****************************************************
+static _Bool zenSegDisplayDigitOff(enum zenSegDigit digit)
+{
+	FILE *GPIOFile;
+
+	// Parameters range checking
+	assert_zenSegDigit_OK(digit);
+
+	if ((digit == SEGDIGIT_LEFT) ||
+	    (digit == SEGDIGIT_BOTH))
+	{
+		GPIOFile = fopen(gpio61_outpath, "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR OPENING %s.\n", gpio61_outpath);
+			return false;
+		}
+		fprintf(GPIOFile, "0");  // Set GPIO_61 to 0
+		fclose(GPIOFile);
+	}
+
+	if ((digit == SEGDIGIT_RIGHT) ||
+	    (digit == SEGDIGIT_BOTH))
+	{
+		GPIOFile = fopen(gpio44_outpath, "w");
+		if (GPIOFile == NULL) {
+			printf("ERROR OPENING %s.\n", gpio44_outpath);
+			return false;
+		}
+		fprintf(GPIOFile, "0");  // Set GPIO_44 to 0
+		fclose(GPIOFile);
+	}
+
+	return true;
+}
+
+
+//*****************************************************
+// Display a numeric digit.
+// 0 <= num <= 9.
+// Return value:  true=success, false=fail
+//*****************************************************
+static _Bool zenSegDisplayNumDigit(int num)
+{
+	unsigned char buff[2];
+
+	// Parameters range checking
+	assert_zenSegDigitValue_OK(num);
+
+		// Open I2C driver
+	i2cFileDesc = open("/dev/i2c-1", O_RDWR);
+	if (i2cFileDesc < 0) {
+		printf("I2C DRV: Unable to open bus for read/write (/dev/i2c-1)\n");
+		return false;
+	}
+
+		// Set slave address to 0x20
+	int result = ioctl(i2cFileDesc, I2C_SLAVE, 0x20);
+	if (result < 0) {
+		printf("Unable to set I2C device to slave address to 0x20.\n");
+		return false;
+	}
+
+	buff[0] = 0x14;
+	buff[1] = segdisp_lookup[num].reg14;
+	int res = write(i2cFileDesc, buff, 2);
+	if (res != 2) {
+		printf("ERROR!  Unable to write i2c register\n");
+		return false;
+	}
+
+	buff[0] = 0x15;
+	buff[1] = segdisp_lookup[num].reg15;
+	res = write(i2cFileDesc, buff, 2);
+	if (res != 2) {
+		printf("ERROR!  Unable to write i2c register\n");
+		return false;
+	}
+
+	close(i2cFileDesc);
+
+	return true;
+}
+
+//*****************************************************
+// Thread which updates seg display.
+// Return value: None/NULL
+//*****************************************************
+static void *segDisplayThread()
+{
+	struct timespec reqDelay;
+    reqDelay.tv_sec = 0;
+    reqDelay.tv_nsec = 5000000;
+	while(1) {
+		// Update Left Display
+		zenSegDisplayDigitOff(SEGDIGIT_BOTH);
+
+		pthread_mutex_lock(&zenDisplay_mutex);
+		
+		zenSegDisplayNumDigit(leftDigitNum);
+		zenSegDisplayDigitOn(SEGDIGIT_LEFT);
+		
+		nanosleep(&reqDelay, (struct timespec *) NULL);
+		
+		zenSegDisplayDigitOff(SEGDIGIT_LEFT);
+
+		// Update Right Display
+		zenSegDisplayDigitOff(SEGDIGIT_BOTH);
+		
+		zenSegDisplayNumDigit(rightDigitNum);
+		zenSegDisplayDigitOn(SEGDIGIT_RIGHT);
+		
+		nanosleep(&reqDelay, (struct timespec *) NULL);
+
+		pthread_mutex_unlock(&zenDisplay_mutex);
+	}
+	return NULL;
+}
 
 //***** public functions ******************************
 
@@ -168,133 +337,53 @@ _Bool zenSegDisplayInit()
 	return true;  // success
 }
 
-
-
 //*****************************************************
-// Turn on 15-segment digits
-// Return value:  true=success, false=fail
+// Converts new number to left and right digits
+// Return value: void
 //*****************************************************
-_Bool zenSegDisplayDigitOn(enum zenSegDigit digit)
+void zenSegDisplayUpdateNum(int newNum)
 {
-	FILE *GPIOFile;
+	pthread_mutex_lock(&zenDisplay_mutex);
 
-	// Parameters range checking
-	assert_zenSegDigit_OK(digit);
-
-	if ((digit == SEGDIGIT_LEFT) ||
-	    (digit == SEGDIGIT_BOTH))
-	{
-		GPIOFile = fopen(gpio61_outpath, "w");
-		if (GPIOFile == NULL) {
-			printf("ERROR OPENING %s.\n", gpio61_outpath);
-			return false;
-		}
-		fprintf(GPIOFile, "1");  // Set GPIO_61 to 1
-		fclose(GPIOFile);
+	// Make sure newNum between [0 - 99]
+	// Put left digit in temp[0], right digit in temp[1]
+	int temp[2];
+	if (newNum < 0) {
+        temp[SEGDIGIT_LEFT] = 0;
+        temp[SEGDIGIT_RIGHT] = 0;
 	}
-
-	if ((digit == SEGDIGIT_RIGHT) ||
-	    (digit == SEGDIGIT_BOTH))
-	{
-		GPIOFile = fopen(gpio44_outpath, "w");
-		if (GPIOFile == NULL) {
-			printf("ERROR OPENING %s.\n", gpio44_outpath);
-			return false;
-		}
-		fprintf(GPIOFile, "1");  // Set GPIO_44 to 1
-		fclose(GPIOFile);
+	else if ( newNum < 10) {
+        temp[SEGDIGIT_LEFT] = 0;
+        temp[SEGDIGIT_RIGHT] = newNum;
+    }
+	else if (newNum > 99) {
+		temp[SEGDIGIT_LEFT] = 9;
+		temp[SEGDIGIT_RIGHT] = 9;
 	}
+	else
+	{
+		unsigned int digit = count(newNum);
+		while (digit--) {
+			temp[digit] = newNum % 10;
+			newNum /= 10;
+		}
+    }
 
-	return true;
+	// Update left and right , segDisplayThread will automatically read them
+	leftDigitNum = temp[SEGDIGIT_LEFT];
+	rightDigitNum = temp[SEGDIGIT_RIGHT];
+
+	pthread_mutex_unlock(&zenDisplay_mutex);
 }
 
-
-
-//*****************************************************
-// Turn off 15-segment digits
-// Return value:  true=success, false=fail
-//*****************************************************
-_Bool zenSegDisplayDigitOff(enum zenSegDigit digit)
+void zenSegDisplayStart()
 {
-	FILE *GPIOFile;
-
-	// Parameters range checking
-	assert_zenSegDigit_OK(digit);
-
-	if ((digit == SEGDIGIT_LEFT) ||
-	    (digit == SEGDIGIT_BOTH))
-	{
-		GPIOFile = fopen(gpio61_outpath, "w");
-		if (GPIOFile == NULL) {
-			printf("ERROR OPENING %s.\n", gpio61_outpath);
-			return false;
-		}
-		fprintf(GPIOFile, "0");  // Set GPIO_61 to 0
-		fclose(GPIOFile);
-	}
-
-	if ((digit == SEGDIGIT_RIGHT) ||
-	    (digit == SEGDIGIT_BOTH))
-	{
-		GPIOFile = fopen(gpio44_outpath, "w");
-		if (GPIOFile == NULL) {
-			printf("ERROR OPENING %s.\n", gpio44_outpath);
-			return false;
-		}
-		fprintf(GPIOFile, "0");  // Set GPIO_44 to 0
-		fclose(GPIOFile);
-	}
-
-	return true;
+	// Start the thread
+	pthread_create(&zenDisplay_id, NULL, &segDisplayThread, NULL);
 }
 
-
-//*****************************************************
-// Display a numeric digit.
-// 0 <= num <= 9.
-// Return value:  true=success, false=fail
-//*****************************************************
-_Bool zenSegDisplayNumDigit(int num)
+void zenSegDisplayStop()
 {
-	unsigned char buff[2];
-
-	// Parameters range checking
-	assert_zenSegDigitValue_OK(num);
-
-		// Open I2C driver
-	i2cFileDesc = open("/dev/i2c-1", O_RDWR);
-	if (i2cFileDesc < 0) {
-		printf("I2C DRV: Unable to open bus for read/write (/dev/i2c-1)\n");
-		return false;
-	}
-
-		// Set slave address to 0x20
-	int result = ioctl(i2cFileDesc, I2C_SLAVE, 0x20);
-	if (result < 0) {
-		printf("Unable to set I2C device to slave address to 0x20.\n");
-		return false;
-	}
-
-	buff[0] = 0x14;
-	buff[1] = segdisp_lookup[num].reg14;
-	int res = write(i2cFileDesc, buff, 2);
-	if (res != 2) {
-		printf("ERROR!  Unable to write i2c register\n");
-		return false;
-	}
-
-	buff[0] = 0x15;
-	buff[1] = segdisp_lookup[num].reg15;
-	res = write(i2cFileDesc, buff, 2);
-	if (res != 2) {
-		printf("ERROR!  Unable to write i2c register\n");
-		return false;
-	}
-
-	close(i2cFileDesc);
-
-	return true;
+	zenSegDisplayDigitOff(SEGDIGIT_BOTH);
+	pthread_join(zenDisplay_id, NULL);
 }
-
-
-

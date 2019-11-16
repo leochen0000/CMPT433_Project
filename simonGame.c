@@ -129,6 +129,9 @@ static void *simonGameThread()
     int index = 0;
     int gameBuffer[maxLevel];
 
+    // Initialize user score to seg display
+    zenSegDisplayUpdateNum(index);
+
     // Init game buffer
     for (int i = 0; i < maxLevel; i++) {
         gameBuffer[i] = -1;
@@ -143,8 +146,6 @@ static void *simonGameThread()
             pthread_exit(0);
         }
         gameBuffer[index] = buttonNext;
-
-        printf("Next button: %d\n", buttonNext);
 
         // Show current buffer directions
         displayBuffer(gameBuffer, index);
@@ -180,6 +181,7 @@ static void *simonGameThread()
 
                 index = 0;
                 wrong = true;
+                zenSegDisplayUpdateNum(index); // Update score to seg display
                 break;
             }
             checkTermination();
@@ -195,6 +197,7 @@ static void *simonGameThread()
             zenBuzzerBeep(440, 100);
             index++;
             printf("All correct! Level: %d passed!\n", index);
+            zenSegDisplayUpdateNum(index); // Update score to seg display
         }
 
 		// sampling delay
@@ -211,6 +214,9 @@ void simonGame_start(void)
 {
     printf("Starting game of 'Simon'\n");
     
+    // Start seg display
+    //zenSegDisplayStart();
+
     // 3, 2, 1 count down
     extLED8x8CountDown321(font8x8);
 
@@ -227,6 +233,9 @@ void simonGame_stop(void)
 {
 	// Unlock mutex to let sorting thread know about request to finish
 	pthread_mutex_unlock(&simonGameStat);
+
+    // Stop seg display
+    //zenSegDisplayStop();
 
     printf("Stopping game of 'Simon'\n");
 
