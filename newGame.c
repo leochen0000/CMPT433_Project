@@ -6,8 +6,9 @@
 #define BIRDBODY_LENGTH   2
 #define N_WALLS 4
 #define INIT_WALL_x 3   // The initial walls will be generated starting from this x-pos
-#define MAX_WALL_HEIGHT 4
+#define MAX_WALL_HEIGHT 3
 #define SPACE_BETWEEN_WALLS 1
+#define WALL_GAP 5
 
 #define MAX_WIDTH   7
 #define MIN_WIDTH   0
@@ -103,25 +104,37 @@ static void initWalls()
 static void drawWalls()
 {
 	for (int k = 0; k < N_WALLS; k++) {
-		for ( int j = 0; j <= wall[k].y; j++) {
+
+        // Top half of wall
+		for (int j = 0; j <= wall[k].y; j++) {
             extLED8x8DrawPixel(wall[k].x, wall[k].y - j, 1);
         }
+
+        // Bottom half of wall
+        for (int j = WALL_GAP + 1; j <= MIN_HEIGHT; j++) {
+            extLED8x8DrawPixel(wall[k].x, wall[k].y + j, 1);
+        }
+
     }
 }
 
-// static void moveWalls()
-// {
-// 	int k;
+static void moveWalls()
+{
+	int k;
 
-// 	pthread_mutex_lock(&newGameData);
-// 	{
-// 		while(1) {
-// 			// Generate walls
-			
-// 		}
-// 	}
-// 	pthread_mutex_unlock(&newGameData);
-// }
+	pthread_mutex_lock(&newGameData);
+	{
+		// while(1) {
+			for (k = 0; k < N_WALLS; k++) {
+                wall[k].x--;
+                if (wall[k].x < MIN_WIDTH) {
+                    wall[k].x = MAX_WIDTH;
+                }
+            }
+		// }
+	}
+	pthread_mutex_unlock(&newGameData);
+}
 
 //-------------------------------------------------------
 // New game.
@@ -180,20 +193,23 @@ static void *newGameThread()
                     samplecnt = 0;
 
                     // TODO: Check for collision first
+
                     // If any joystick button is pressed, fly up one unit
                     if (button < JOYSTICK_MAXBUTTONS) {
 					flyUp(); 
 					extLED8x8FillPixel(0);
 					drawBirdBody();
-					extLED8x8DisplayUpdate();
 
                     } else {
                         fallDown();
                         extLED8x8FillPixel(0);
                         drawBirdBody();
-                        extLED8x8DisplayUpdate();
                     }
-                    // moveWalls();
+
+                    moveWalls();
+                    drawWalls();
+                    extLED8x8DisplayUpdate();
+                    zenSegDisplayUpdateNum(++walls_passed);
                 }
                 
             }
