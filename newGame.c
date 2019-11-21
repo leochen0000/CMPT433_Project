@@ -134,7 +134,7 @@ static void *newGameThread()
 				} 
 			} 
             else { // Bird is in flight
-                if (++samplecnt == 10) {
+                if (++samplecnt == 2) {
                     samplecnt = 0;
                     // TODO: Check for collision.
                     if (button < JOYSTICK_MAXBUTTONS) {
