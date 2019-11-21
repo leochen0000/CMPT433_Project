@@ -94,14 +94,7 @@ static void hover()
 {
     pthread_mutex_lock(&newGameData);
     {   
-        // Check that we don't go out of bounds
-        if (birdbody[0].y < MIN_HEIGHT) {
-            // head 
-		    // birdbody[0].y++;
-            // tail
-		    birdbody[1].y = birdbody[0].y;
-            // printf("flyDown()\n");
-        }
+        birdbody[1].y = birdbody[0].y;
     }
     pthread_mutex_unlock(&newGameData);
 }
@@ -146,6 +139,7 @@ static void moveWalls()
                 wall[k].x--;
                 if (wall[k].x < MIN_WIDTH) {
                     wall[k].x = MAX_WIDTH;
+                    wall[k].y = rand() % MAX_WALL_HEIGHT;
                 }
             }
 		// }
