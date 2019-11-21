@@ -19,8 +19,9 @@
 #include "catchGame.h"
 #include "simonGame.h"
 #include "snakeGame.h"
+#include "newGame.h"
 
-#define MAX_GAMES 4
+#define MAX_GAMES 5
 
 int anim_count = 0;
 int sample_count = 0;
@@ -32,7 +33,8 @@ char *(gamename[]) = {
 	"SIMON",
 	"CATCH",
 	"BALANCE",
-	"SNAKE"
+	"SNAKE",
+	"NEW"
 };
 
 
@@ -89,6 +91,10 @@ int main(int argc, char **argv)
 
 					case 3:  // Snake game
 						snakeGame_stop();
+						break;
+
+					case 4:  // New game
+						newGame_stop();
 						break;
 				}
 				game_running = false;
@@ -183,6 +189,18 @@ int main(int argc, char **argv)
 					}
 					extLED8x8DisplayUpdate();
 					break;
+
+				case 4:  // new game
+					zenSegDisplayUpdateNum(4); // Game #4
+
+					extLED8x8FillPixel(0);
+					extLED8x8DrawPixel(3, 4, 1);
+					extLED8x8DrawPixel(3, 3, 1);
+					extLED8x8DrawPixel(4, 3, 1);
+					extLED8x8DrawPixel(5, 3, 1);
+
+					extLED8x8DisplayUpdate();
+					break;
 			}
 
 				// Increment animation count
@@ -210,6 +228,10 @@ int main(int argc, char **argv)
 
 					case 3:  // Snake game
 						snakeGame_start();
+						break;
+
+					case 4:  // New game
+						newGame_start();
 						break;
 				}
 			}
