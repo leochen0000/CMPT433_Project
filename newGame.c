@@ -23,8 +23,9 @@ static birdgame_coords birdbody[BIRDBODY_LENGTH];  // coordinates of bird's body
 static birdgame_coords wall[N_WALLS];  // coordinates of walls to fly through
 
 static _Bool gameStopped = false;
-static int walls_passed = 0;
+static _Bool hovering = false;
 static _Bool bird_in_motion = false;
+static int walls_passed = 0;
 
 // static enum zenJoystickButton current_direction;
 
@@ -65,7 +66,7 @@ static void flyUp()
             // head 
 		    birdbody[0].y--;
             // tail
-		    birdbody[1].y--;
+		    birdbody[1].y = birdbody[0].y + 1;
             // printf("flyUp()\n");
         }
     }
@@ -82,7 +83,23 @@ static void fallDown()
             // head 
 		    birdbody[0].y++;
             // tail
-		    birdbody[1].y++;
+		    birdbody[1].y = birdbody[0].y - 1;
+            // printf("flyDown()\n");
+        }
+    }
+    pthread_mutex_unlock(&newGameData);
+}
+
+static void hover()
+{
+    pthread_mutex_lock(&newGameData);
+    {   
+        // Check that we don't go out of bounds
+        if (birdbody[0].y < MIN_HEIGHT) {
+            // head 
+		    // birdbody[0].y++;
+            // tail
+		    birdbody[1].y = birdbody[0].y;
             // printf("flyDown()\n");
         }
     }
@@ -196,19 +213,31 @@ static void *newGameThread()
 
                     // If any joystick button is pressed, fly up one unit
                     if (button < JOYSTICK_MAXBUTTONS) {
-					flyUp(); 
-					extLED8x8FillPixel(0);
-					drawBirdBody();
-
-                    } else {
-                        fallDown();
+                        flyUp(); 
                         extLED8x8FillPixel(0);
                         drawBirdBody();
-                    }
+                        hovering = true;
 
+                    } else {
+                        if (hovering) { // Intermediate state between flying up and falling
+                            hover();
+                            extLED8x8FillPixel(0);
+                            drawBirdBody();
+                            hovering = false;
+                        } else {
+                            fallDown();
+                            extLED8x8FillPixel(0);
+                            drawBirdBody();
+                        }
+                        
+                    }
+                    
                     moveWalls();
                     drawWalls();
                     extLED8x8DisplayUpdate();
+
+                    // Increase score and display
+                    walls_passed++;
                     zenSegDisplayUpdateNum(++walls_passed);
                 }
                 
