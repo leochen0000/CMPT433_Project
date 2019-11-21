@@ -4,6 +4,10 @@
 
 //------------ variables and definitions -----------------------
 #define BIRDBODY_LENGTH   2
+#define N_WALLS 4
+#define INIT_WALL_x 3   // The initial walls will be generated starting from this x-pos
+#define MAX_WALL_HEIGHT 4
+#define SPACE_BETWEEN_WALLS 1
 
 #define MAX_WIDTH   7
 #define MIN_WIDTH   0
@@ -15,6 +19,7 @@ static pthread_t newGame_id;
 static pthread_mutex_t newGameStat = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t newGameData = PTHREAD_MUTEX_INITIALIZER;
 static birdgame_coords birdbody[BIRDBODY_LENGTH];  // coordinates of bird's body (pixels)
+static birdgame_coords wall[N_WALLS];  // coordinates of walls to fly through
 
 static _Bool gameStopped = false;
 static int walls_passed = 0;
@@ -51,7 +56,7 @@ static void initBirdBody()
 
 static void flyUp()
 {
-    printf("Called flyUp()\n");
+    // printf("Called flyUp()\n");
     pthread_mutex_lock(&newGameData);
     {   
         // Check that we don't go out of bounds
@@ -60,15 +65,15 @@ static void flyUp()
 		    birdbody[0].y--;
             // tail
 		    birdbody[1].y--;
-            printf("flyUp()\n");
+            // printf("flyUp()\n");
         }
     }
     pthread_mutex_unlock(&newGameData);
 }
 
-static void flyDown()
+static void fallDown()
 {
-    printf("Called flyDown()\n");
+    // printf("Called flyDown()\n");
     pthread_mutex_lock(&newGameData);
     {   
         // Check that we don't go out of bounds
@@ -77,11 +82,46 @@ static void flyDown()
 		    birdbody[0].y++;
             // tail
 		    birdbody[1].y++;
-            printf("flyDown()\n");
+            // printf("flyDown()\n");
         }
     }
     pthread_mutex_unlock(&newGameData);
 }
+
+static void initWalls()
+{
+    pthread_mutex_lock(&newGameData);
+	{   
+        for (int k = 0; k < N_WALLS; k++) {
+            wall[k].x = INIT_WALL_x + (k * 2);
+            wall[k].y = rand() % MAX_WALL_HEIGHT;
+        }
+	}
+	pthread_mutex_unlock(&newGameData);
+}
+
+static void drawWalls()
+{
+	for (int k = 0; k < N_WALLS; k++) {
+		for ( int j = 0; j <= wall[k].y; j++) {
+            extLED8x8DrawPixel(wall[k].x, wall[k].y - j, 1);
+        }
+    }
+}
+
+// static void moveWalls()
+// {
+// 	int k;
+
+// 	pthread_mutex_lock(&newGameData);
+// 	{
+// 		while(1) {
+// 			// Generate walls
+			
+// 		}
+// 	}
+// 	pthread_mutex_unlock(&newGameData);
+// }
 
 //-------------------------------------------------------
 // New game.
@@ -96,12 +136,14 @@ static void *newGameThread()
 	walls_passed = 0;
     bird_in_motion = false;
 
-    // Initialize bird's body
+    // Initialize bird's body and walls
     initBirdBody();
+    initWalls();
 
-	// Draw bird on the left side of matrix
+	// Draw bird on the left side of matrix and walls on the right side
 	extLED8x8FillPixel(0);
     drawBirdBody();
+    drawWalls();
 	extLED8x8DisplayUpdate();
 
     // Initialize score on seg display
@@ -136,22 +178,22 @@ static void *newGameThread()
             else { // Bird is in flight
                 if (++samplecnt == 2) {
                     samplecnt = 0;
-                    // TODO: Check for collision.
-                    if (button < JOYSTICK_MAXBUTTONS) {
-                    // If any joystick button is pressed, fly up one unit
-					flyUp();
 
+                    // TODO: Check for collision first
+                    // If any joystick button is pressed, fly up one unit
+                    if (button < JOYSTICK_MAXBUTTONS) {
+					flyUp(); 
 					extLED8x8FillPixel(0);
 					drawBirdBody();
-					// extLED8x8DrawPixel(apple.x, apple.y, 1);
 					extLED8x8DisplayUpdate();
 
                     } else {
-                        flyDown();
+                        fallDown();
                         extLED8x8FillPixel(0);
                         drawBirdBody();
                         extLED8x8DisplayUpdate();
                     }
+                    // moveWalls();
                 }
                 
             }
