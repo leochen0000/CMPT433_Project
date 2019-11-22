@@ -63,6 +63,23 @@ $(document).ready(function() {
 	// Handle 'gameselected' response
 	socket.on('gameselected', function(gameselected) {
 		$('#gameselect').html(gameselected);
+		switch (gameselected) {
+			case 'SIMON':
+				$('#desc').html('Test your memory by repeating the patterns!');
+				break;
+			case 'CATCH':
+				$('#desc').html('Catch the ball!');
+				break;
+			case 'BALANCE':
+				$('#desc').html('Can you keep the BeagleBone balanced?');
+				break;
+			case 'SNAKE':
+				$('#desc').html('Ever wished you had no arms and no legs? Try this remake of the apple-eating classic!');
+				break;
+			case 'FLOPPY BIRB':
+				$('#desc').html('Use the joystick to flap your wings and avoid pipes!');
+				break;
+		}
 		gameselectedReceived = 1;
 	});
 	
