@@ -1,43 +1,67 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&display=swap');
+
 body {
+	font-family: 'Open Sans', sans-serif;
 	width: 800px;
 	margin-left: auto;
 	margin-right: auto;
+	background-color: #e7e7e7;
 }
+
 h1, h2 {
 	margin-bottom: 1px;
 	padding-bottom: 1px;
 }
 
+/* Container */
 #content {
-	margin-top: 10pt;
+	display: grid;
+  	grid-template-columns: repeat(3, 1fr);
+  	grid-gap: 10px;
+	grid-auto-rows: minmax(100px, auto);
+	background-color: aliceblue;
+	padding: 15px;
+}
+
+#title {
+	text-align: center;
+	border-radius: 5px;
+	padding: 10px;
+	margin-bottom: 5px;
+	background-color: #7fbbff;
+	border: thin azure solid;
 }
 
 #status-box {
-	float: right;
-	width: 500px;
-	min-height: 200pt;
-	border: thin black solid;
-	background-color: #f3f3f3;
-	padding-left: 10pt;
-	padding-right: 10pt;
+	grid-column: 2 / 4;
+	grid-row: 1;
+
+	border: thin #ff907f solid;
+	border-radius: 5px;
+	background-color: #ffd07f;
+	/* padding-left: 10pt; */
+	/* padding-right: 10pt; */
 }
 
-#left-box {
-	margin-right: 300px;	
-	border: thin black solid;
-	padding-left: 10pt;
-	padding-right: 10pt;
-	min-height: 200pt;
+#matrix {
+	grid-column: 1;
+	grid-row: 1;
+	border-radius: 5px;
 }
 
-#game-box {
-	margin-right: 300px;	
-	width: 240px;
-	height: 240px;
-	border: thin white solid;
-	padding-left: 10pt;
-	padding-right: 10pt;
-	background: black;
+#info {
+	grid-column: 1 / 4;
+	grid-row: 2 / 3;
+	border-radius: 5px;
+
+	background-color: #ff907f;
+	border: thin azure solid;
+}
+
+#text {
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 #error-box {
