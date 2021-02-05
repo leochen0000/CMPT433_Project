@@ -1,7 +1,7 @@
 4 person project using BeagleBone Green development board for embedded systems class
 
 
-How to set up the BeagleBone Minigame Console
+How to set up the BeagleBone Minigame Console:
 	
 1. Go to the main directory to find our Makefile.
 2. Type: $make
